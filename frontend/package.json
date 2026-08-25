@@ -6,10 +6,19 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:start": "bash scripts/local-postgres.sh start",
+    "db:stop": "bash scripts/local-postgres.sh stop",
+    "db:status": "bash scripts/local-postgres.sh status",
+    "db:migrate": "node scripts/migrate.mjs",
+    "db:seed": "node scripts/seed.mjs",
+    "db:setup": "npm run db:start && npm run db:migrate && npm run db:seed"
   },
   "dependencies": {
+    "@phosphor-icons/react": "^2.1.10",
+    "ai": "^7.0.79",
     "next": "16.3.0",
+    "postgres": "^3.4.9",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },

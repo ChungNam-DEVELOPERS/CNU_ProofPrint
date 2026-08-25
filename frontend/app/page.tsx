@@ -1,69 +1,151 @@
-import Image from "next/image";
+import { ArrowRight } from "@phosphor-icons/react/dist/ssr/ArrowRight";
+import { CalendarBlank } from "@phosphor-icons/react/dist/ssr/CalendarBlank";
+import { CheckCircle } from "@phosphor-icons/react/dist/ssr/CheckCircle";
+import { Clock } from "@phosphor-icons/react/dist/ssr/Clock";
+import { FileText } from "@phosphor-icons/react/dist/ssr/FileText";
+import { FunnelSimple } from "@phosphor-icons/react/dist/ssr/FunnelSimple";
+import { Sparkle } from "@phosphor-icons/react/dist/ssr/Sparkle";
+import Link from "next/link";
+import { CnuCourseShell } from "./components/cnu-course-shell";
+import { assignment as assignmentCopy } from "./lib/proofprint-data";
+import { getServerActor } from "./server/auth";
+import { getWorkspaceByAssignmentSlug } from "./server/proofprint-repository";
+import styles from "./proofprint.module.css";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
+export default async function Home() {
+  const actor = await getServerActor();
+  const workspace = await getWorkspaceByAssignmentSlug(actor, "ai-service-proposal");
+  const completedSteps = workspace.status === "submitted" ? 5 : workspace.currentStep;
+  const progress = completedSteps * 20;
+  const mainSubmitted = workspace.status === "submitted";
+  const assignments = [
+    {
+      title: workspace.assignment.title,
+      due: assignmentCopy.dueAt,
+      meta: `${assignmentCopy.category} · ${workspace.assignment.score ?? 0}점`,
+      status: mainSubmitted ? "제출 완료" : "작성 중",
+      proofprint: mainSubmitted ? "제출 완료" : `${completedSteps}/5 단계`,
+      tone: mainSubmitted ? "done" : "progress",
+      href: `/assignments/${workspace.assignment.slug}`,
+    },
+    {
+      title: "서비스 사용자 시나리오 작성",
+      due: "2026.09.25 (금) 23:59",
+      meta: "개인 과제 · 15점",
+      status: "시작 전",
+      proofprint: "선택 사용",
+      tone: "ready",
+      href: "#assignment-analysis",
+    },
+    {
+      title: "사용자 인터뷰 분석 보고서",
+      due: "2026.09.11 (금) 18:00",
+      meta: "팀 과제 · 10점",
+      status: "제출 완료",
+      proofprint: "제출 완료",
+      tone: "done",
+      href: "/proofprints",
+    },
+  ];
+  const submittedCount = assignments.filter((item) => item.status === "제출 완료").length;
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <CnuCourseShell activeMenu="과제">
+      <div className={styles.pageHeadingRow}>
+        <div>
+          <p className={styles.eyebrow}>학습요소</p>
+          <h1>과제</h1>
+          <p className={styles.pageDescription}>
+            제출할 과제와 AI 학습과정 기록 상태를 함께 확인하세요.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        <Link className={styles.outlineButton} href="/proofprints">
+          <FileText size={18} weight="bold" aria-hidden="true" /> 내 Proofprint
+        </Link>
+      </div>
+
+      <section className={styles.overviewBanner} aria-labelledby="proofprint-overview-title">
+        <div className={styles.bannerIcon} aria-hidden="true">
+          <Sparkle size={28} weight="fill" />
         </div>
-      </main>
-    </div>
+        <div className={styles.bannerCopy}>
+          <span className={styles.bannerLabel}>이번 주 AI 학습과정</span>
+          <h2 id="proofprint-overview-title">
+            {mainSubmitted
+              ? "캠퍼스 서비스 설계 과제의 Proofprint 제출이 완료되었습니다"
+              : "캠퍼스 서비스 설계 과제의 Proofprint를 이어서 작성하세요"}
+          </h2>
+          <p>
+            5단계 중 {completedSteps}단계를 기록했습니다. 평균 체크포인트 작성 시간은 약 2분입니다.
+          </p>
+        </div>
+        <div className={styles.bannerProgress}>
+          <div>
+            <strong>{progress}%</strong>
+            <span>{completedSteps} / 5 단계</span>
+          </div>
+          <div className={styles.progressTrack} aria-label={`Proofprint 작성률 ${progress}%`}>
+            <span style={{ width: `${progress}%` }} />
+          </div>
+        </div>
+        <Link
+          className={styles.bannerAction}
+          href={mainSubmitted
+            ? "/assignments/ai-service-proposal/proofprint/result"
+            : "/assignments/ai-service-proposal/proofprint"}
+        >
+          {mainSubmitted ? "제출본 보기" : "이어서 작성"} <ArrowRight size={18} weight="bold" aria-hidden="true" />
+        </Link>
+      </section>
+
+      <div className={styles.filterBar}>
+        <div className={styles.tabList} aria-label="과제 상태 필터">
+          <button className={styles.activeTab} type="button">
+            전체 <span>3</span>
+          </button>
+          <button type="button">제출 전 {assignments.length - submittedCount}</button>
+          <button type="button">제출 완료 {submittedCount}</button>
+        </div>
+        <button className={styles.filterButton} type="button">
+          <FunnelSimple size={17} weight="bold" aria-hidden="true" /> 마감일순
+        </button>
+      </div>
+
+      <section className={styles.assignmentList} aria-label="과제 목록">
+        {assignments.map((item) => (
+          <Link className={styles.assignmentCard} href={item.href} key={item.title}>
+            <div className={`${styles.assignmentMarker} ${styles[item.tone]}`} aria-hidden="true" />
+            <div className={styles.assignmentMain}>
+              <div className={styles.assignmentTitleLine}>
+                <h2>{item.title}</h2>
+                {item.proofprint !== "선택 사용" && (
+                  <span className={styles.proofprintBadge}>
+                    <Sparkle size={13} weight="fill" aria-hidden="true" /> Proofprint
+                  </span>
+                )}
+              </div>
+              <p>{item.meta}</p>
+              <div className={styles.assignmentMeta}>
+                <span>
+                  <CalendarBlank size={16} weight="bold" aria-hidden="true" /> 마감 {item.due}
+                </span>
+                <span>
+                  {item.tone === "done" ? (
+                    <CheckCircle size={16} weight="fill" aria-hidden="true" />
+                  ) : (
+                    <Clock size={16} weight="bold" aria-hidden="true" />
+                  )}
+                  {item.proofprint}
+                </span>
+              </div>
+            </div>
+            <span className={`${styles.statusPill} ${styles[item.tone]}`}>{item.status}</span>
+            <ArrowRight className={styles.cardArrow} size={20} weight="bold" aria-hidden="true" />
+          </Link>
+        ))}
+      </section>
+    </CnuCourseShell>
   );
 }

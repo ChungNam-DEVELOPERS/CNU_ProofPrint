@@ -1,0 +1,5 @@
+# Local browser captures can contain authenticated CNU account information.
+/.artifacts/
+
+# macOS metadata
+.DS_Store
