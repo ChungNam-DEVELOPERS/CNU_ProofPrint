@@ -15,7 +15,7 @@ try {
   await sql.begin(async (tx) => {
     await tx.unsafe(seedSql);
   });
-  console.log("Demo course, assignments, and workspaces are ready.");
+  console.log("데모 과목·과제·Proofprint 기록을 준비했습니다.");
 } finally {
   await sql.end({ timeout: 5 });
 }

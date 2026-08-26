@@ -1,0 +1,38 @@
+services:
+  db:
+    image: postgres:14-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_DB: cnu_proofprint
+    ports:
+      # 로컬 도구로 붙을 때 쓰는 포트. 네이티브 설치와 겹치지 않게 55432 로 맞췄다.
+      - "55432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d cnu_proofprint"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://postgres@db:5432/cnu_proofprint
+      PROOFPRINT_DEMO_MODE: "true"
+      DEMO_STUDENT_SUB: demo:cnu:202600001
+      DB_POOL_MAX: "5"
+      # 학교 게이트웨이. 키는 .env 에서 읽어 온다 (이미지에 굽지 않는다).
+      CNU_LLM_BASE_URL: ${CNU_LLM_BASE_URL:-https://factchat-cloud.mindlogic.ai/v1/gateway/claude}
+      CNU_LLM_MODEL: ${CNU_LLM_MODEL:-claude-sonnet-5}
+      CNU_MULTI_LLM_CONNECTOR_TOKEN: ${CNU_MULTI_LLM_CONNECTOR_TOKEN:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    ports:
+      - "3000:3000"
+
+volumes:
+  pgdata:

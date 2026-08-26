@@ -118,7 +118,7 @@ from courses
 where public_id = 'course_data_ethics_2026_1'
 on conflict (public_id) do update set title = excluded.title;
 
-insert into workspaces (public_id, assignment_id, student_id, status, current_step)
+insert into proofprints (public_id, assignment_id, student_id, status, current_step)
 select 'workspace_ai_service_proposal_demo', assignments.id, users.id, 'in_progress', 2
 from assignments
 join courses on courses.id = assignments.course_id
@@ -127,7 +127,7 @@ where assignments.public_id = 'assignment_ai_service_proposal'
   and users.external_subject = 'demo:cnu:202600001'
 on conflict (public_id) do nothing;
 
-insert into workspaces (
+insert into proofprints (
   public_id, assignment_id, student_id, status, current_step, started_at, updated_at, submitted_at
 )
 select 'workspace_team_feedback_demo', assignments.id, users.id, 'submitted', 4,
@@ -141,7 +141,7 @@ where assignments.public_id = 'assignment_team_feedback'
   and users.external_subject = 'demo:cnu:202600001'
 on conflict (public_id) do nothing;
 
-insert into workspaces (
+insert into proofprints (
   public_id, assignment_id, student_id, status, current_step, started_at, updated_at, submitted_at
 )
 select 'workspace_data_ethics_demo', assignments.id, users.id, 'submitted', 4,
@@ -155,22 +155,22 @@ where assignments.public_id = 'assignment_data_ethics'
   and users.external_subject = 'demo:cnu:202600001'
 on conflict (public_id) do nothing;
 
-insert into learning_goals (workspace_id, source, text, position)
+insert into learning_goals (proofprint_id, source, text, position)
 select id, 'course', '사용자 문제를 요구사항으로 구조화하고, 대안을 비교해 구현 가능한 소프트웨어 해결안을 설계한다.', 0
-from workspaces
+from proofprints
 where public_id = 'workspace_ai_service_proposal_demo'
-on conflict (workspace_id, source, position) do nothing;
+on conflict (proofprint_id, source, position) do nothing;
 
-insert into learning_goals (workspace_id, source, text, position)
+insert into learning_goals (proofprint_id, source, text, position)
 select id, 'personal',
        'AI가 제안한 기능을 그대로 수용하지 않고, 사용자 가치·기술 가능성·개인정보 관점에서 우선순위를 판단할 수 있다.',
        0
-from workspaces
+from proofprints
 where public_id = 'workspace_ai_service_proposal_demo'
-on conflict (workspace_id, source, position) do nothing;
+on conflict (proofprint_id, source, position) do nothing;
 
 insert into ai_uses (
-  workspace_id, purpose, question_summary, suggestion_summary, is_primary, occurred_at,
+  proofprint_id, purpose, question_summary, suggestion_summary, is_primary, occurred_at,
   provider, model_id, source_request_id
 )
 select id,
@@ -182,56 +182,56 @@ select id,
        'demo',
        'cnu-auto',
        'seed-adventure-design-ai-use'
-from workspaces
+from proofprints
 where public_id = 'workspace_ai_service_proposal_demo'
-on conflict (workspace_id) where is_primary do nothing;
+on conflict (proofprint_id) where is_primary do nothing;
 
 insert into decision_checkpoints (ai_use_id, decision, reason)
 select id,
        'revise',
        '상시 위치 추적 기능은 제외하고, 사용자가 직접 체크인한 정보와 익명 혼잡도 데이터만 활용하도록 수정했다.'
 from ai_uses
-where workspace_id = (
-  select id from workspaces where public_id = 'workspace_ai_service_proposal_demo'
+where proofprint_id = (
+  select id from proofprints where public_id = 'workspace_ai_service_proposal_demo'
 )
   and is_primary
 on conflict (ai_use_id) do nothing;
 
-insert into reflections (workspace_id, learned, changed_mind, remaining_question)
+insert into reflections (proofprint_id, learned, changed_mind, remaining_question)
 select id,
        '기능의 수보다 사용자에게 필요한 정보가 무엇인지, 그 정보를 안전하게 수집할 수 있는지가 서비스 설계에서 더 중요하다는 것을 배웠다.',
        '처음에는 자동 위치 추적이 정확하고 편리하다고 생각했지만, 자발적 체크인과 익명 집계가 신뢰와 구현 가능성을 함께 높일 수 있다고 판단했다.',
        '자발적 체크인만으로도 실제 좌석 현황을 충분히 정확하게 유지하려면 어떤 참여 유인과 검증 방식이 필요할까?'
-from workspaces
+from proofprints
 where public_id = 'workspace_ai_service_proposal_demo'
-on conflict (workspace_id) do nothing;
+on conflict (proofprint_id) do nothing;
 
 insert into disclosure_settings (
-  workspace_id, share_purpose, share_judgment, share_reflection, share_raw
+  proofprint_id, share_purpose, share_judgment, share_reflection, share_raw
 )
 select id, true, true, true, false
-from workspaces
+from proofprints
 where public_id = 'workspace_ai_service_proposal_demo'
-on conflict (workspace_id) do nothing;
+on conflict (proofprint_id) do nothing;
 
 insert into proofprint_versions (
-  public_id, workspace_id, version, snapshot_json, checksum, submitted_at
+  public_id, proofprint_id, version, snapshot_json, checksum, submitted_at
 )
 select 'proofprint_team_feedback_v1', id, 1,
        '{"title":"사용자 인터뷰 분석 보고서","checkpointCount":4,"rawShared":false}'::jsonb,
        'seed-user-interview-v1',
        '2026-08-19 21:32:00+09'::timestamptz
-from workspaces
+from proofprints
 where public_id = 'workspace_team_feedback_demo'
 on conflict (public_id) do nothing;
 
 insert into proofprint_versions (
-  public_id, workspace_id, version, snapshot_json, checksum, submitted_at
+  public_id, proofprint_id, version, snapshot_json, checksum, submitted_at
 )
 select 'proofprint_data_ethics_v1', id, 1,
        '{"title":"데이터 윤리 사례 분석","checkpointCount":5,"rawShared":false}'::jsonb,
        'seed-data-ethics-v1',
        '2026-06-14 18:47:00+09'::timestamptz
-from workspaces
+from proofprints
 where public_id = 'workspace_data_ethics_demo'
 on conflict (public_id) do nothing;

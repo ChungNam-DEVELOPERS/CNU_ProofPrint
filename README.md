@@ -18,7 +18,16 @@ scripts                       DB 시작 · 마이그레이션 · 시드
 `app/server/*` 는 모두 `import "server-only"` 가 걸려 있어 브라우저 번들에 들어가지 않는다.
 서버 컴포넌트는 리포지토리 함수를 직접 부르고, 클라이언트는 같은 함수를 `app/api` 를 통해 쓴다.
 
-## 로컬 실행
+## 실행
+
+설치와 문제 해결은 [SETUP.md](./SETUP.md) 에 정리했다. 요약하면:
+
+```bash
+cp .env.example .env      # CNU_MULTI_LLM_CONNECTOR_TOKEN 채우기
+docker compose up --build # 또는 npm install && npm run db:setup && npm run dev
+```
+
+## 로컬 실행 (직접 설치)
 
 DB는 로컬 PostgreSQL 14를 사용한다. keg-only 설치라 PATH가 필요하다.
 
