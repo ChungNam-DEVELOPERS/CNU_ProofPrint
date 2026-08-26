@@ -86,7 +86,23 @@ DB만 제어할 때는 `npm run db:start`, `db:status`, `db:stop`. 마이그레�
 `record_gap`은 `gaps`의 `(workspace_id, term)` 유일 제약을 타서, 같은 개념을 다시 남기면
 행이 늘지 않고 `occurrences`가 올라간다.
 
-`ANTHROPIC_API_KEY`가 없으면 대화는 저장되지만 답변을 만들지 않는다. 화면에 그 사실을 알린다.
+### 모델 연결
+
+학교 멀티LLM 게이트웨이가 Anthropic 네이티브 Messages API 를 그대로 제공하므로,
+`baseURL` 만 바꿔 같은 SDK 로 붙는다. 도구 호출, adaptive thinking, `web_search`
+서버 도구, mid-conversation system 메시지 모두 게이트웨이에서 동작을 확인했다.
+
+```
+CNU_LLM_BASE_URL=https://factchat-cloud.mindlogic.ai/v1/gateway/claude
+CNU_MULTI_LLM_CONNECTOR_TOKEN=<학교 발급 키>
+CNU_LLM_MODEL=claude-sonnet-5
+```
+
+게이트웨이에는 `claude-opus-5`, `claude-fable-5`, `gpt-5.6`, `gemini-3.7-flash` 등
+30개 모델이 있다. `GET /v1/gateway/models/` 로 목록을 볼 수 있다.
+
+게이트웨이가 설정되지 않으면 `ANTHROPIC_API_KEY` 로 대체하고, 둘 다 없으면 대화는
+저장하되 답변을 만들지 않고 화면에 그 사실을 알린다.
 
 ## 확인 명령
 

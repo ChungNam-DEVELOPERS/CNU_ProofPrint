@@ -11,7 +11,31 @@ import { appendMessage, recordToolCall } from "../learning-writes";
 import { getDb } from "../db";
 import { buildTools, type ToolTrace } from "./tools";
 
-const MODEL = "claude-opus-5";
+/**
+ * 모델 접근 경로. 학교 게이트웨이가 Anthropic 네이티브 Messages API 를 그대로
+ * 제공하므로 baseURL 만 바꿔 같은 SDK 를 쓴다. 도구 호출과 adaptive thinking 이
+ * 게이트웨이에서도 동작하는 것을 확인했다.
+ */
+function resolveModelAccess(): { client: Anthropic; model: string } | null {
+  const gatewayUrl = process.env.CNU_LLM_BASE_URL?.trim();
+  const gatewayToken = process.env.CNU_MULTI_LLM_CONNECTOR_TOKEN?.trim();
+
+  if (gatewayUrl && gatewayToken) {
+    return {
+      client: new Anthropic({ baseURL: gatewayUrl, apiKey: gatewayToken }),
+      model: process.env.CNU_LLM_MODEL?.trim() || "claude-sonnet-5",
+    };
+  }
+
+  if (process.env.ANTHROPIC_API_KEY?.trim() || process.env.ANTHROPIC_AUTH_TOKEN?.trim()) {
+    return {
+      client: new Anthropic(),
+      model: process.env.CNU_LLM_MODEL?.trim() || "claude-opus-5",
+    };
+  }
+
+  return null;
+}
 
 /** 설명을 듣고 이만큼 지나서 되물으면 «바로 이해하지는 못했다» 는 신호로 본다. */
 const SLOW_REPLY_SECONDS = 90;
@@ -36,10 +60,6 @@ const SYSTEM = `너는 대학생의 학습 파트너다. 한국어로, 군더더
 
 설명만 해 주고 끝내지 않는다. 설명한 뒤에는 학생이 자기 말로 다시 설명해 보게 한다.
 학생이 틀렸을 때는 정답만 던지지 말고, 어디서 어긋났는지 짚어 준다.`;
-
-function hasCredentials() {
-  return Boolean(process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN);
-}
 
 /**
  * 이번 턴에 «막힘» 신호가 있었는지 실제로 재서 알려준다.
@@ -99,8 +119,7 @@ function explainFailure(error: unknown): AgentRunResult | null {
     return {
       mode: "bad_credentials",
       reply:
-        "AI 키가 거부됐습니다. ANTHROPIC_API_KEY 값을 확인해 주세요. " +
-        "Anthropic 키는 sk-ant- 로 시작합니다.",
+        "AI 키가 거부됐습니다. CNU_MULTI_LLM_CONNECTOR_TOKEN 값을 확인해 주세요.",
       trace: [],
     };
   }
@@ -145,10 +164,12 @@ export async function runAgentTurn(
   const signalLine = await measureStudySignals(workspaceId, userText);
   await appendMessage(workspaceId, "user", userText);
 
-  if (!hasCredentials()) {
+  const access = resolveModelAccess();
+  if (!access) {
     const reply =
       "지금은 학교 AI 연결이 설정되지 않아 답변을 만들 수 없습니다. " +
-      "ANTHROPIC_API_KEY 를 설정하면 에이전트가 목차와 오답노트를 직접 갱신합니다.";
+      "CNU_LLM_BASE_URL 과 CNU_MULTI_LLM_CONNECTOR_TOKEN 을 설정하면 " +
+      "에이전트가 목차와 오답노트를 직접 갱신합니다.";
     await appendMessage(workspaceId, "agent", reply);
     return { mode: "no_credentials", reply, trace: [] };
   }
@@ -162,11 +183,10 @@ export async function runAgentTurn(
   // 잰 신호는 대화 본문이 아니라 운영자 채널로 넣는다.
   messages.push({ role: "system", content: signalLine });
 
-  const client = new Anthropic();
   const trace: ToolTrace[] = [];
 
   try {
-    return await runToolLoop(client, workspaceId, messages, trace);
+    return await runToolLoop(access.client, access.model, workspaceId, messages, trace);
   } catch (error) {
     const explained = explainFailure(error);
     if (!explained) throw error;
@@ -177,12 +197,13 @@ export async function runAgentTurn(
 
 async function runToolLoop(
   client: Anthropic,
+  model: string,
   workspaceId: string,
   messages: Anthropic.MessageParam[],
   trace: ToolTrace[],
 ): Promise<AgentRunResult> {
   const runner = client.beta.messages.toolRunner({
-    model: MODEL,
+    model,
     max_tokens: 16000,
     thinking: { type: "adaptive" },
     system: SYSTEM,
