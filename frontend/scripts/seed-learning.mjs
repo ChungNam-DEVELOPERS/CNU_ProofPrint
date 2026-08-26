@@ -1,7 +1,7 @@
 // 워크스페이스 학습 데이터를 목 데이터에서 한 번 옮겨 심는다.
 // 상대 시각 문구("3분 전")는 실제 timestamptz 로 바꿔 저장한다.
 import postgres from "postgres";
-import { workspaces, assignments, sampleConversation } from "../app/lib/study-data.ts";
+import { workspaces, assignments, sampleConversation } from "./learning-seed-data.mjs";
 
 const databaseUrl =
   process.env.DATABASE_URL ??

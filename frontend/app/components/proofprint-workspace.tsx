@@ -143,7 +143,7 @@ export function ProofprintWorkspace({
     setSaveError("");
     try {
       const { workspace } = await apiRequest<{ workspace: WorkspaceResource }>(
-        `/api/workspaces/${initialWorkspace.workspaceId}`,
+        `/api/proofprints/${initialWorkspace.workspaceId}`,
         {
           method: "PATCH",
           body: JSON.stringify({ revision, currentStep, draft: draftToSave }),

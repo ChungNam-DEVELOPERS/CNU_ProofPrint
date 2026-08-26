@@ -10,13 +10,13 @@ export const runtime = "nodejs";
 
 export async function POST(
   request: Request,
-  context: { params: Promise<{ workspaceId: string }> },
+  context: { params: Promise<{ proofprintId: string }> },
 ) {
   try {
     const actor = await getServerActor();
-    const { workspaceId } = await context.params;
+    const { proofprintId } = await context.params;
     const input = parseSubmitWorkspaceInput(await readJsonRequest(request));
-    const result = await submitWorkspace(actor, workspaceId, input.revision);
+    const result = await submitWorkspace(actor, proofprintId, input.revision);
     return noStoreJson(result, { status: 201 });
   } catch (error) {
     return apiErrorResponse(error);

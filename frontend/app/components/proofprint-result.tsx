@@ -76,7 +76,7 @@ export function ProofprintResult({
     setVisibilityError("");
     try {
       const response = await apiRequest<{ workspace: WorkspaceResource }>(
-        `/api/workspaces/${workspace.workspaceId}/disclosure`,
+        `/api/proofprints/${workspace.workspaceId}/disclosure`,
         {
           method: "PATCH",
           body: JSON.stringify({ revision: workspace.revision, disclosure: next }),
@@ -102,7 +102,7 @@ export function ProofprintResult({
       const response = await apiRequest<{
         workspace: WorkspaceResource;
         submission: ProofprintSubmission;
-      }>(`/api/workspaces/${workspace.workspaceId}/submit`, {
+      }>(`/api/proofprints/${workspace.workspaceId}/submit`, {
         method: "POST",
         body: JSON.stringify({ revision: workspace.revision }),
       });

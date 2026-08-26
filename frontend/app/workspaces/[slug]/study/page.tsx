@@ -1,13 +1,12 @@
-import { ArrowUp } from "@phosphor-icons/react/dist/ssr/ArrowUp";
 import { Lightning } from "@phosphor-icons/react/dist/ssr/Lightning";
 import { NotePencil } from "@phosphor-icons/react/dist/ssr/NotePencil";
-import { Paperclip } from "@phosphor-icons/react/dist/ssr/Paperclip";
 import { Sparkle } from "@phosphor-icons/react/dist/ssr/Sparkle";
 import { Target } from "@phosphor-icons/react/dist/ssr/Target";
 import { User } from "@phosphor-icons/react/dist/ssr/User";
 import { notFound } from "next/navigation";
 import { AppShell } from "../../../components/app-shell";
 import { LevelChip } from "../../../components/level-chip";
+import { StudyComposer } from "../../../components/study-composer";
 import { flattenTopics } from "../../../lib/learning";
 import { getServerActor } from "../../../server/auth";
 import {
@@ -93,15 +92,7 @@ export default async function StudyPage({
             )}
           </div>
 
-          <form className={styles.composer}>
-            <button type="button" className={styles.iconBtnLight} aria-label="자료 첨부">
-              <Paperclip size={18} weight="bold" aria-hidden="true" />
-            </button>
-            <input placeholder="궁금한 것을 물어보거나, 배운 것을 직접 설명해 보세요" />
-            <button type="button" className={`${styles.btn} ${styles.btnPrimary}`}>
-              <ArrowUp size={16} weight="bold" aria-hidden="true" />
-            </button>
-          </form>
+          <StudyComposer workspaceSlug={slug} />
         </section>
 
         <aside className={styles.toolPane}>

@@ -52,6 +52,28 @@ DB만 제어할 때는 `npm run db:start`, `db:status`, `db:stop`. 마이그레�
 - 워크스페이스·목차·이해도·오답노트·과제 목록은 아직 `app/lib/study-data.ts`의 목 데이터다.
 - Proofprint 5단계 작업공간·제출·이력만 PostgreSQL에 저장된다.
 
+## 학습 에이전트
+
+`POST /api/workspaces/[slug]/agent` 하나가 한 턴을 돌린다. 도구는 다섯 개다.
+
+| 도구 | 하는 일 |
+| --- | --- |
+| `get_state` | 목차·이해도·오답노트·자료를 먼저 읽는다 |
+| `read_material` | 올린 자료에서 관련 부분을 찾고 참고 횟수를 올린다 |
+| `log_evidence` | 학습 근거를 기록한다. 이해도 값은 쓰지 못한다 |
+| `record_gap` | 몰랐던 개념을 오답노트에 키워드로 남긴다 |
+| `update_syllabus` | 목차에 없는 주제를 추가한다 |
+
+**에이전트는 이해도를 직접 쓰지 못한다.** `log_evidence`로 무슨 일이 있었는지만 기록하고,
+상태는 `app/server/learning-writes.ts`의 `levelFromEvidence`가 계산한다. 에이전트가 설명해 준
+근거(`explained_by_agent`)만으로는 `exposed`를 넘지 못하고, 학생이 직접 설명한 근거
+(`self_explained`)가 있어야 `solid`가 된다.
+
+`record_gap`은 `gaps`의 `(workspace_id, term)` 유일 제약을 타서, 같은 개념을 다시 남기면
+행이 늘지 않고 `occurrences`가 올라간다.
+
+`ANTHROPIC_API_KEY`가 없으면 대화는 저장되지만 답변을 만들지 않는다. 화면에 그 사실을 알린다.
+
 ## 확인 명령
 
 ```bash
