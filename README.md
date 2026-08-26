@@ -1,8 +1,22 @@
-# Proofprint frontend
+# Proofprint
 
 사이버캠퍼스의 과목·과제를 읽어와, 학습 에이전트가 목차별 이해도와 오답노트를 스스로
 정리하는 학습 서비스의 Next.js 파일럿이다. 사이버캠퍼스는 화면이 아니라 데이터 소스로만
 사용하고, 학생은 Proofprint 안에서 학습한다.
+
+Next.js 하나로 화면과 서버를 함께 돌린다. 별도 백엔드 프로세스는 없다.
+
+```
+app/workspaces, app/connect   화면
+app/api                       HTTP 엔드포인트
+app/server                    DB 접근 · 에이전트 · 인증 (server-only)
+app/lib                       화면과 서버가 함께 쓰는 타입
+db/migrations                 스키마
+scripts                       DB 시작 · 마이그레이션 · 시드
+```
+
+`app/server/*` 는 모두 `import "server-only"` 가 걸려 있어 브라우저 번들에 들어가지 않는다.
+서버 컴포넌트는 리포지토리 함수를 직접 부르고, 클라이언트는 같은 함수를 `app/api` 를 통해 쓴다.
 
 ## 로컬 실행
 
