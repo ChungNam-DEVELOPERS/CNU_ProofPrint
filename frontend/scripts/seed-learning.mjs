@@ -36,6 +36,13 @@ function toTimestamp(label) {
   return null;
 }
 
+/** 데모 오답노트에 «왜 기록됐는지» 를 채운다. */
+function gapSignal(note) {
+  if (note.occurrences > 1) return "repeat_question";
+  if (note.confusedWith) return "incorrect_explanation";
+  return "explicit_confusion";
+}
+
 /** 이해도 상태에서 근거 종류를 되짚는다. */
 function evidenceKind(level) {
   if (level === "solid") return "self_explained";
@@ -93,6 +100,7 @@ for (const workspace of workspaces) {
   await sql`delete from workspace_assignments where workspace_id = ${workspaceId}`;
 
   const topicIdByTitle = new Map();
+  const normalizeTitle = (title) => title.replace(/^[0-9]+[.)]?\s*/, "").toLowerCase();
 
   async function insertTopic(topic, parentId, position) {
     const at = toTimestamp(topic.updatedAt);
@@ -107,6 +115,7 @@ for (const workspace of workspaces) {
     `;
     counts.topics += 1;
     topicIdByTitle.set(topic.title, inserted.id);
+    topicIdByTitle.set(normalizeTitle(topic.title), inserted.id);
 
     if (topic.level !== "unseen") {
       await sql`
@@ -135,15 +144,16 @@ for (const workspace of workspaces) {
     await sql`
       insert into gaps (
         workspace_id, topic_id, kind, term, definition, key_point,
-        confused_with, occurrences, status, first_seen_at, last_seen_at
+        confused_with, occurrences, status, signal, first_seen_at, last_seen_at
       ) values (
-        ${workspaceId}, ${topicIdByTitle.get(note.topicTitle) ?? null}, ${note.kind},
+        ${workspaceId}, ${topicIdByTitle.get(note.topicTitle) ?? topicIdByTitle.get(normalizeTitle(note.topicTitle)) ?? null}, ${note.kind},
         ${note.term}, ${note.definition}, ${note.keyPoint}, ${note.confusedWith},
-        ${note.occurrences}, ${note.status}, ${seen}, ${seen}
+        ${note.occurrences}, ${note.status}, ${gapSignal(note)}, ${seen}, ${seen}
       )
       on conflict (workspace_id, term) do update set
         occurrences = excluded.occurrences,
         status = excluded.status,
+        signal = excluded.signal,
         last_seen_at = excluded.last_seen_at
     `;
     counts.gaps += 1;

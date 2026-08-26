@@ -29,7 +29,22 @@ export type Gap = {
   confusedWith: string | null;
   occurrences: number;
   status: "open" | "reviewing" | "resolved";
+  signal: GapSignal | null;
   lastSeen: string;
+};
+
+export type GapSignal =
+  | "repeat_question"
+  | "slow_to_grasp"
+  | "explicit_confusion"
+  | "incorrect_explanation";
+
+/** 이 개념이 왜 오답노트에 들어왔는지 화면에 보여줄 문구. */
+export const gapSignalLabel: Record<GapSignal, string> = {
+  repeat_question: "전에 다룬 걸 다시 물어봐서",
+  slow_to_grasp: "설명 뒤에도 한참 걸려서",
+  explicit_confusion: "모르겠다고 해서",
+  incorrect_explanation: "설명이 어긋나서",
 };
 
 export type Material = {

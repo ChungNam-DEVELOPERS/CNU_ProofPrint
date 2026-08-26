@@ -4,6 +4,13 @@ import type { Row } from "postgres";
 import type { UnderstandingLevel } from "../lib/learning";
 import { getDb } from "./db";
 
+/** 오답노트에 남길 만한 «막힘» 신호. 개념이 처음 나온 것만으로는 신호가 아니다. */
+export type GapSignal =
+  | "repeat_question"
+  | "slow_to_grasp"
+  | "explicit_confusion"
+  | "incorrect_explanation";
+
 export type EvidenceKind =
   | "explained_by_agent"
   | "seen_in_material"
@@ -68,11 +75,19 @@ async function recomputeTopicLevel(topicId: string) {
   return level;
 }
 
+/** 목차 제목은 «3. 고유값과 고유벡터» 처럼 번호가 붙어 있다. 번호는 무시하고 찾는다. */
+const TITLE_PREFIX = '^[0-9]+[.)]?\\s*';
+
 async function findTopicId(workspaceId: string, title: string) {
   const sql = getDb();
   const [row] = await sql<Array<Row & { id: string }>>`
     select id from topics
-    where workspace_id = ${workspaceId} and lower(title) = lower(${title})
+    where workspace_id = ${workspaceId}
+      and (
+        lower(title) = lower(${title})
+        or lower(regexp_replace(title, ${TITLE_PREFIX}, ''))
+           = lower(regexp_replace(${title}, ${TITLE_PREFIX}, ''))
+      )
     order by parent_id nulls first
     limit 1
   `;
@@ -109,6 +124,7 @@ export async function upsertGap(
     keyPoint: string;
     confusedWith?: string | null;
     topicTitle?: string | null;
+    signal: GapSignal;
   },
 ) {
   const sql = getDb();
@@ -118,10 +134,10 @@ export async function upsertGap(
 
   const [row] = await sql<Array<Row & { occurrences: number }>>`
     insert into gaps (
-      workspace_id, topic_id, kind, term, definition, key_point, confused_with
+      workspace_id, topic_id, kind, term, definition, key_point, confused_with, signal
     ) values (
       ${workspaceId}, ${topicId}, ${input.kind}, ${input.term},
-      ${input.definition}, ${input.keyPoint}, ${input.confusedWith ?? null}
+      ${input.definition}, ${input.keyPoint}, ${input.confusedWith ?? null}, ${input.signal}
     )
     on conflict (workspace_id, term) do update set
       occurrences = gaps.occurrences + 1,
@@ -129,6 +145,7 @@ export async function upsertGap(
       definition = excluded.definition,
       key_point = excluded.key_point,
       confused_with = coalesce(excluded.confused_with, gaps.confused_with),
+      signal = excluded.signal,
       last_seen_at = now()
     returning occurrences
   `;

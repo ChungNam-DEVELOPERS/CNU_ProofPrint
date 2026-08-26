@@ -166,12 +166,14 @@ export async function listGaps(workspaceId: string): Promise<Gap[]> {
         confused_with: string | null;
         occurrences: number;
         status: Gap["status"];
+        signal: Gap["signal"];
         last_seen_at: Date;
       }
     >
   >`
     select g.id, t.title as topic_title, g.kind, g.term, g.definition,
-           g.key_point, g.confused_with, g.occurrences, g.status, g.last_seen_at
+           g.key_point, g.confused_with, g.occurrences, g.status, g.signal,
+           g.last_seen_at
     from gaps g
     left join topics t on t.id = g.topic_id
     where g.workspace_id = ${workspaceId}
@@ -188,6 +190,7 @@ export async function listGaps(workspaceId: string): Promise<Gap[]> {
     confusedWith: row.confused_with,
     occurrences: Number(row.occurrences),
     status: row.status,
+    signal: row.signal,
     lastSeen: formatWhen(row.last_seen_at),
   }));
 }

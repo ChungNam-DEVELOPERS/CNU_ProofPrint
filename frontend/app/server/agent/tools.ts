@@ -10,7 +10,7 @@ import {
   searchMaterials,
   upsertGap,
 } from "../learning-writes";
-import { flattenTopics } from "../../lib/learning";
+import { flattenTopics, gapSignalLabel } from "../../lib/learning";
 
 export type ToolTrace = { tool: string; summary: string };
 
@@ -27,7 +27,9 @@ export function buildTools(workspaceId: string, trace: ToolTrace[]) {
   const getState = betaZodTool({
     name: "get_state",
     description:
-      "이 워크스페이스의 현재 학습 상태를 읽는다. 목차와 단원별 이해도, 오답노트에 남은 개념, 올려둔 자료 목록을 돌려준다. 답하기 전에 먼저 확인할 것.",
+      "이 워크스페이스의 목차와 단원별 이해도, 오답노트에 남은 개념, 올려둔 자료 목록을 돌려준다. " +
+      "학생이 어디까지 아는지에 따라 답이 달라질 때, 또는 무언가를 기록하기 직전에 쓴다. " +
+      "단순한 사실 확인이나 이어지는 잡담에는 부르지 않는다.",
     inputSchema: z.object({}),
     run: async () => {
       const [topics, gaps, materials] = await Promise.all([
@@ -109,8 +111,15 @@ export function buildTools(workspaceId: string, trace: ToolTrace[]) {
   const recordGap = betaZodTool({
     name: "record_gap",
     description:
-      "학생이 몰랐던 개념을 오답노트에 키워드로 남긴다. 사소한 계산 실수나 오타는 남기지 않는다. " +
-      "외워야 넘어갈 수 있는 개념·공식·정리·용어만 남긴다. 같은 키워드를 다시 남기면 막힌 횟수가 올라간다.",
+      "학생이 실제로 막힌 개념을 오답노트에 키워드로 남긴다. 암기용이므로 아껴서 쓴다.\n" +
+      "부를 조건 — 아래 신호 중 하나가 실제로 관찰될 때만 부른다:\n" +
+      "  repeat_question: 전에 다룬 것을 다시 물어봄\n" +
+      "  slow_to_grasp: 설명한 뒤에도 이해에 시간이 걸림 (학습 신호로 알려준다)\n" +
+      "  explicit_confusion: 모르겠다·헷갈린다고 직접 말함\n" +
+      "  incorrect_explanation: 설명해 봤는데 어긋남\n" +
+      "부르지 말 것 — 개념이 대화에 처음 등장했다는 이유만으로는 부르지 않는다. " +
+      "학생이 한 번 듣고 바로 이해했으면 남기지 않는다. 계산 실수, 오타, 단순 확인 질문도 남기지 않는다.\n" +
+      "한 턴에 하나까지만 남긴다. 같은 키워드를 다시 남기면 막힌 횟수가 올라간다.",
     inputSchema: z.object({
       term: z.string().describe("외울 키워드. 짧게. 예: 대각화 가능 조건"),
       kind: z.enum(["개념", "공식", "정리", "용어"]),
@@ -126,6 +135,14 @@ export function buildTools(workspaceId: string, trace: ToolTrace[]) {
         .nullable()
         .optional()
         .describe("연결할 목차 제목. 모르면 null"),
+      signal: z
+        .enum([
+          "repeat_question",
+          "slow_to_grasp",
+          "explicit_confusion",
+          "incorrect_explanation",
+        ])
+        .describe("이 개념을 남기기로 판단한 근거. 실제로 관찰된 것만 고른다."),
     }),
     run: async (input) => {
       const result = await upsertGap(workspaceId, {
@@ -135,12 +152,14 @@ export function buildTools(workspaceId: string, trace: ToolTrace[]) {
         keyPoint: input.keyPoint,
         confusedWith: input.confusedWith ?? null,
         topicTitle: input.topicTitle ?? null,
+        signal: input.signal,
       });
+      const why = gapSignalLabel[input.signal];
       await note(
         "record_gap",
         result.occurrences > 1
-          ? `«${result.term}» 을(를) 오답노트에 기록했습니다. ${result.occurrences}번째로 막힌 지점입니다.`
-          : `«${result.term}» 을(를) 오답노트에 키워드로 기록했습니다.`,
+          ? `«${result.term}» 을(를) 오답노트에 기록했습니다. ${why} ${result.occurrences}번째로 막힌 지점입니다.`
+          : `«${result.term}» 을(를) 오답노트에 키워드로 기록했습니다. ${why}`,
         input,
         result,
       );

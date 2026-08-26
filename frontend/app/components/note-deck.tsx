@@ -7,7 +7,7 @@ import { EyeSlash } from "@phosphor-icons/react/dist/ssr/EyeSlash";
 import { Repeat } from "@phosphor-icons/react/dist/ssr/Repeat";
 import { Warning } from "@phosphor-icons/react/dist/ssr/Warning";
 import { useState } from "react";
-import type { Gap } from "../lib/learning";
+import { gapSignalLabel, type Gap } from "../lib/learning";
 import styles from "../study.module.css";
 
 export function NoteDeck({ notes }: { notes: Gap[] }) {
@@ -115,6 +115,7 @@ export function NoteDeck({ notes }: { notes: Gap[] }) {
               <div className={styles.noteFoot}>
                 <span className={styles.muted}>
                   <span className={styles.autoTag}>자동 기록</span>
+                  {note.signal ? `${gapSignalLabel[note.signal]} · ` : ""}
                   {note.lastSeen}
                 </span>
                 <span style={{ display: "flex", gap: 8 }}>
