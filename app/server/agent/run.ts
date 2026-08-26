@@ -1,6 +1,11 @@
 import "server-only";
 
-import Anthropic from "@anthropic-ai/sdk";
+import Anthropic, {
+  APIConnectionError,
+  APIError,
+  AuthenticationError,
+  RateLimitError,
+} from "@anthropic-ai/sdk";
 import { listGaps, listMessages } from "../learning-repository";
 import { appendMessage, recordToolCall } from "../learning-writes";
 import { getDb } from "../db";
@@ -83,10 +88,45 @@ async function measureStudySignals(workspaceId: string, userText: string) {
 }
 
 export type AgentRunResult = {
-  mode: "live" | "no_credentials";
+  mode: "live" | "no_credentials" | "bad_credentials" | "unavailable";
   reply: string;
   trace: ToolTrace[];
 };
+
+/** 모델 호출이 실패한 이유를 사용자가 알아볼 수 있는 문구로 바꾼다. */
+function explainFailure(error: unknown): AgentRunResult | null {
+  if (error instanceof AuthenticationError) {
+    return {
+      mode: "bad_credentials",
+      reply:
+        "AI 키가 거부됐습니다. ANTHROPIC_API_KEY 값을 확인해 주세요. " +
+        "Anthropic 키는 sk-ant- 로 시작합니다.",
+      trace: [],
+    };
+  }
+  if (error instanceof RateLimitError) {
+    return {
+      mode: "unavailable",
+      reply: "AI 요청이 한도에 걸렸습니다. 잠시 후 다시 시도해 주세요.",
+      trace: [],
+    };
+  }
+  if (error instanceof APIConnectionError) {
+    return {
+      mode: "unavailable",
+      reply: "AI 서비스에 연결하지 못했습니다. 네트워크를 확인해 주세요.",
+      trace: [],
+    };
+  }
+  if (error instanceof APIError) {
+    return {
+      mode: "unavailable",
+      reply: `AI 서비스가 요청을 거부했습니다 (HTTP ${error.status ?? "?"}).`,
+      trace: [],
+    };
+  }
+  return null;
+}
 
 /** 이번 턴에 쌓인 도구 호출을 방금 만든 답변 메시지에 붙인다. */
 async function attachToolCalls(workspaceId: string, messageId: string) {
@@ -125,6 +165,22 @@ export async function runAgentTurn(
   const client = new Anthropic();
   const trace: ToolTrace[] = [];
 
+  try {
+    return await runToolLoop(client, workspaceId, messages, trace);
+  } catch (error) {
+    const explained = explainFailure(error);
+    if (!explained) throw error;
+    await appendMessage(workspaceId, "agent", explained.reply);
+    return explained;
+  }
+}
+
+async function runToolLoop(
+  client: Anthropic,
+  workspaceId: string,
+  messages: Anthropic.MessageParam[],
+  trace: ToolTrace[],
+): Promise<AgentRunResult> {
   const runner = client.beta.messages.toolRunner({
     model: MODEL,
     max_tokens: 16000,

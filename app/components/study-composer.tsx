@@ -9,7 +9,7 @@ import { useState, type FormEvent } from "react";
 import styles from "../study.module.css";
 
 type AgentResponse = {
-  mode: "live" | "no_credentials";
+  mode: "live" | "no_credentials" | "bad_credentials" | "unavailable";
   reply: string;
   trace: { tool: string; summary: string }[];
 };
@@ -43,10 +43,8 @@ export function StudyComposer({ workspaceSlug }: { workspaceSlug: string }) {
       }
 
       const result = (await response.json()) as AgentResponse;
-      if (result.mode === "no_credentials") {
-        setError(
-          "학교 AI 연결이 아직 설정되지 않았습니다. ANTHROPIC_API_KEY 를 설정하면 동작합니다.",
-        );
+      if (result.mode !== "live") {
+        setError(result.reply);
       }
 
       setText("");

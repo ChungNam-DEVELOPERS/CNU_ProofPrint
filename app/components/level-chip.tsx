@@ -27,11 +27,12 @@ export function LevelMeter({
 }) {
   const total =
     counts.solid + counts.shaky + counts.exposed + counts.unseen || 1;
-  const order: { key: UnderstandingLevel; cls: string; swatch: string }[] = [
-    { key: "solid", cls: styles.meterSolid, swatch: "#35a06a" },
-    { key: "shaky", cls: styles.meterShaky, swatch: "#e0a03e" },
-    { key: "exposed", cls: styles.meterExposed, swatch: "#6f9be0" },
-    { key: "unseen", cls: styles.meterUnseen, swatch: "#d7dae1" },
+  // 막대와 범례가 같은 CSS 변수를 쓰므로 색이 어긋날 수 없다.
+  const order: { key: UnderstandingLevel; bar: string; dot: string }[] = [
+    { key: "solid", bar: styles.meterSolid, dot: styles.swatchSolid },
+    { key: "shaky", bar: styles.meterShaky, dot: styles.swatchShaky },
+    { key: "exposed", bar: styles.meterExposed, dot: styles.swatchExposed },
+    { key: "unseen", bar: styles.meterUnseen, dot: styles.swatchUnseen },
   ];
 
   return (
@@ -40,7 +41,7 @@ export function LevelMeter({
         {order.map((item) => (
           <span
             key={item.key}
-            className={`${styles.meterSeg} ${item.cls}`}
+            className={`${styles.meterSeg} ${item.bar}`}
             style={{ width: `${(counts[item.key] / total) * 100}%` }}
           />
         ))}
@@ -49,8 +50,7 @@ export function LevelMeter({
         {order.map((item) => (
           <span key={item.key} className={styles.legendItem}>
             <span
-              className={styles.legendSwatch}
-              style={{ background: item.swatch }}
+              className={`${styles.legendSwatch} ${item.dot}`}
               aria-hidden="true"
             />
             {understandingMeta[item.key].label} <strong>{counts[item.key]}</strong>

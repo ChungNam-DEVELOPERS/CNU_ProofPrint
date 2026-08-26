@@ -22,6 +22,11 @@
   --gold: #f4d35e;
   --steel: #457b9d;
 
+  --meter-solid: #4fa6b8;
+  --meter-shaky: #f4d35e;
+  --meter-exposed: #4274d9;
+  --meter-unseen: #d6dce7;
+
   --solid-fg: #1f7c90;
   --solid-bg: #e3f2f6;
   --shaky-fg: #9c7410;
@@ -633,19 +638,19 @@
 }
 
 .meterSolid {
-  background: #4fa6b8;
+  background: var(--meter-solid);
 }
 
 .meterShaky {
-  background: #f4d35e;
+  background: var(--meter-shaky);
 }
 
 .meterExposed {
-  background: #4274d9;
+  background: var(--meter-exposed);
 }
 
 .meterUnseen {
-  background: #d6dce7;
+  background: var(--meter-unseen);
 }
 
 .legend {
@@ -666,7 +671,24 @@
 .legendSwatch {
   width: 10px;
   height: 10px;
+  flex: 0 0 10px;
   border-radius: 3px;
+}
+
+.swatchSolid {
+  background: var(--meter-solid);
+}
+
+.swatchShaky {
+  background: var(--meter-shaky);
+}
+
+.swatchExposed {
+  background: var(--meter-exposed);
+}
+
+.swatchUnseen {
+  background: var(--meter-unseen);
 }
 
 .legendItem strong {

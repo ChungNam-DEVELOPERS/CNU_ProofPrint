@@ -4,6 +4,9 @@ import Link from "next/link";
 import { AppShell } from "../../components/app-shell";
 import styles from "../../study.module.css";
 
+// AppShell 이 DB 를 읽으므로 정적 프리렌더 대상이 될 수 없다.
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 export const metadata = { title: "새 워크스페이스 | Proofprint" };
 
 export default function NewProjectPage() {
