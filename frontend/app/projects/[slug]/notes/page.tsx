@@ -34,8 +34,8 @@ export default async function NotesPage({
         <div>
           <h1 className={styles.pageTitle}>오답노트</h1>
           <p className={styles.pageDesc}>
-            공부하다가 몰랐던 개념만 키워드로 모았습니다. 사소한 계산 실수는 담지 않고,
-            외워야 넘어갈 수 있는 것만 남깁니다.
+            학습하는 동안 에이전트가 &ldquo;이건 키워드로 남겨야겠다&rdquo;고 판단한 개념만
+            자동으로 쌓입니다. 직접 적을 필요 없고, 사소한 계산 실수는 담지 않습니다.
           </p>
         </div>
       </div>

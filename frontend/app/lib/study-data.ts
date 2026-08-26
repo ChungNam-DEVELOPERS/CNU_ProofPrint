@@ -6,7 +6,7 @@ export const understandingMeta: Record<
 > = {
   unseen: { label: "미학습", hint: "아직 다루지 않음" },
   exposed: { label: "접함", hint: "설명을 듣거나 자료에서 봄" },
-  shaky: { label: "불안정", hint: "설명하지 못했거나 틀림" },
+  shaky: { label: "불안정", hint: "설명해 봤지만 정확하지 않았음" },
   solid: { label: "설명 가능", hint: "직접 정확히 설명함" },
 };
 
@@ -136,7 +136,7 @@ export const projects: Project[] = [
     status: "학습 중",
     summary:
       "고유값 단원 초반을 보고 있습니다. 행렬식 계산은 직접 설명할 수 있게 됐지만, 고유값과 대각화의 연결 지점에서 계속 막히고 있어 같은 지점을 세 번 다시 물어봤습니다.",
-    nextAction: "대각화 가능 조건을 스스로 설명해 보기 — 오답노트 2건이 여기에 몰려 있습니다.",
+    nextAction: "대각화 가능 조건을 스스로 설명해 보기 — 외울 개념 2개가 여기에 몰려 있습니다.",
     updatedAt: "3분 전",
     studyMinutes: 412,
     topics: [
@@ -147,7 +147,7 @@ export const projects: Project[] = [
         updatedAt: "8월 20일",
         children: [
           { id: "t1-1", title: "부분공간", level: "solid", evidence: "정의를 직접 서술함", updatedAt: "8월 20일" },
-          { id: "t1-2", title: "일차독립과 기저", level: "solid", evidence: "예제 2문항 정답", updatedAt: "8월 21일" },
+          { id: "t1-2", title: "일차독립과 기저", level: "solid", evidence: "예제 풀이를 직접 설명함", updatedAt: "8월 21일" },
           { id: "t1-3", title: "차원", level: "exposed", evidence: "에이전트 설명만 들음", updatedAt: "8월 21일" },
         ],
       },
@@ -158,7 +158,7 @@ export const projects: Project[] = [
         updatedAt: "8월 24일",
         children: [
           { id: "t2-1", title: "여인수 전개", level: "solid", evidence: "3x3 직접 계산 설명", updatedAt: "8월 24일" },
-          { id: "t2-2", title: "행렬식의 성질", level: "shaky", evidence: "행 교환 부호를 틀림", updatedAt: "8월 24일" },
+          { id: "t2-2", title: "행렬식의 성질", level: "shaky", evidence: "행 교환 부호를 반대로 설명함", updatedAt: "8월 24일" },
           { id: "t2-3", title: "크래머 공식", level: "exposed", updatedAt: "8월 24일" },
         ],
       },
@@ -168,9 +168,9 @@ export const projects: Project[] = [
         level: "shaky",
         updatedAt: "3분 전",
         children: [
-          { id: "t3-1", title: "특성방정식", level: "shaky", evidence: "부호 처리에서 반복 실수", updatedAt: "3분 전" },
+          { id: "t3-1", title: "특성방정식", level: "shaky", evidence: "부호 처리를 두 번 다시 물어봄", updatedAt: "3분 전" },
           { id: "t3-2", title: "고유공간", level: "exposed", updatedAt: "26분 전" },
-          { id: "t3-3", title: "대각화 가능 조건", level: "shaky", evidence: "설명 시도했으나 부정확", updatedAt: "12분 전" },
+          { id: "t3-3", title: "대각화 가능 조건", level: "shaky", evidence: "설명해 봤지만 이유가 빠져 있었음", updatedAt: "12분 전" },
           { id: "t3-4", title: "직교대각화", level: "unseen" },
         ],
       },
@@ -262,7 +262,7 @@ export const projects: Project[] = [
       { id: "m3", title: "MIT 18.06 Lecture 21", kind: "링크", pages: "영상", addedAt: "8월 25일", usedCount: 2 },
     ],
     activity: [
-      { id: "a1", at: "3분 전", tool: "record_gap", message: "오답노트에 «det(A - λI) 부호» 를 기록했습니다. 같은 실수 2회째입니다." },
+      { id: "a1", at: "3분 전", tool: "record_gap", message: "«det(A − λI) 부호» 를 오답노트에 키워드로 기록했습니다. 두 번째로 막힌 지점입니다." },
       { id: "a2", at: "12분 전", tool: "log_evidence", message: "«대각화 가능 조건» 을 불안정으로 표시했습니다. 설명 시도가 부정확했습니다." },
       { id: "a3", at: "26분 전", tool: "update_syllabus", message: "«3. 고유값과 고유벡터» 아래에 «직교대각화» 를 추가했습니다." },
       { id: "a4", at: "41분 전", tool: "read_material", message: "«강의노트 3주차.pdf» 14~17쪽을 참고했습니다." },
@@ -336,7 +336,7 @@ export const projects: Project[] = [
       { id: "dm1", title: "과제 안내문.pdf", kind: "PDF", pages: "3쪽", addedAt: "8월 20일", usedCount: 8 },
     ],
     activity: [
-      { id: "da1", at: "2시간 전", tool: "record_gap", message: "오답노트에 «비기능 요구 분류» 를 기록했습니다." },
+      { id: "da1", at: "2시간 전", tool: "record_gap", message: "«비기능 요구사항» 을 오답노트에 키워드로 기록했습니다." },
       { id: "da2", at: "2시간 전", tool: "log_evidence", message: "«기능·비기능 요구 구분» 을 불안정으로 표시했습니다." },
     ],
   },
@@ -348,7 +348,7 @@ export const projects: Project[] = [
     emoji: "⚙️",
     status: "시험 대비",
     summary:
-      "중간고사 범위인 프로세스·스레드 단원을 복습 중입니다. 컨텍스트 스위칭은 안정적이지만 동기화 파트에서 오답이 반복되고 있습니다.",
+      "중간고사 범위인 프로세스·스레드 단원을 복습 중입니다. 컨텍스트 스위칭은 직접 설명할 수 있게 됐지만, 동기화 파트에서는 아직 설명이 자꾸 멈춥니다.",
     nextAction: "교착 상태 4조건을 근거와 함께 설명해 보기",
     updatedAt: "어제",
     studyMinutes: 188,
@@ -368,7 +368,7 @@ export const projects: Project[] = [
         level: "shaky",
         children: [
           { id: "o2-1", title: "임계구역 문제", level: "exposed", updatedAt: "어제" },
-          { id: "o2-2", title: "세마포어", level: "shaky", evidence: "wait/signal 순서를 틀림", updatedAt: "어제" },
+          { id: "o2-2", title: "세마포어", level: "shaky", evidence: "wait/signal 순서를 거꾸로 설명함", updatedAt: "어제" },
           { id: "o2-3", title: "교착 상태 4조건", level: "shaky", updatedAt: "어제" },
         ],
       },
@@ -407,7 +407,7 @@ export const projects: Project[] = [
       { id: "om1", title: "OS 공룡책 5장 요약.pdf", kind: "PDF", pages: "18쪽", addedAt: "8월 19일", usedCount: 9 },
     ],
     activity: [
-      { id: "oa1", at: "어제", tool: "record_gap", message: "오답노트에 «뮤텍스 vs 이진 세마포어» 를 기록했습니다." },
+      { id: "oa1", at: "어제", tool: "record_gap", message: "«뮤텍스 vs 이진 세마포어» 를 오답노트에 키워드로 기록했습니다." },
     ],
   },
 ];
@@ -461,7 +461,7 @@ export const workItems: WorkItem[] = [
     due: "9월 2일 18:00",
     status: "시작 전",
     steps: 0,
-    summary: "특성방정식 6문항, 대각화 4문항.",
+    summary: "특성방정식과 대각화 범위.",
     hasProofprint: false,
   },
   {
@@ -474,7 +474,7 @@ export const workItems: WorkItem[] = [
     status: "진행 중",
     steps: 0,
     summary:
-      "대각화 가능 조건을 설명할 수 있을 때까지. 오답노트 2건이 이 항목에 묶여 있습니다.",
+      "대각화 가능 조건을 설명할 수 있을 때까지. 외울 개념 2개가 이 항목에 묶여 있습니다.",
     hasProofprint: false,
   },
   {

@@ -40,7 +40,7 @@ export function NoteDeck({ notes }: { notes: Note[] }) {
     <>
       <div className={styles.deckBar}>
         <span className={styles.muted}>
-          외울 개념 {notes.length}개 · 반복이 많은 것부터
+          외울 개념 {notes.length}개 · 학습하면서 에이전트가 자동으로 기록합니다
         </span>
         <button
           type="button"
@@ -76,7 +76,7 @@ export function NoteDeck({ notes }: { notes: Note[] }) {
                 {note.occurrences > 1 ? (
                   <span className={styles.noteOcc}>
                     <Repeat size={13} weight="bold" aria-hidden="true" />
-                    {note.occurrences}회 반복
+                    {note.occurrences}번 막힘
                   </span>
                 ) : null}
               </div>
@@ -105,7 +105,7 @@ export function NoteDeck({ notes }: { notes: Note[] }) {
                     <p className={styles.termConfused}>
                       <Warning size={14} weight="fill" aria-hidden="true" />
                       <span>
-                        <em>{note.confusedWith}</em> 와(과) 헷갈렸습니다
+                        대화에서 <em>{note.confusedWith}</em> 로 알고 있었습니다
                       </span>
                     </p>
                   ) : null}
@@ -113,7 +113,10 @@ export function NoteDeck({ notes }: { notes: Note[] }) {
               )}
 
               <div className={styles.noteFoot}>
-                <span className={styles.muted}>마지막 발생 {note.lastSeen}</span>
+                <span className={styles.muted}>
+                  <span className={styles.autoTag}>자동 기록</span>
+                  {note.lastSeen}
+                </span>
                 <span style={{ display: "flex", gap: 8 }}>
                   <button type="button" className={styles.btn}>
                     <ArrowCounterClockwise size={14} weight="bold" aria-hidden="true" />

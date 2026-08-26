@@ -84,7 +84,7 @@ export default async function StudyPage({
           <h1 className={styles.pageTitle}>학습하기</h1>
           <p className={styles.pageDesc}>
             대화하는 동안 에이전트가 스스로 판단해서 목차와 이해도를 갱신하고, 몰랐던
-            것은 오답노트에 남깁니다.
+            개념은 오답노트에 키워드로 남깁니다. 따로 적을 필요 없습니다.
           </p>
         </div>
       </div>

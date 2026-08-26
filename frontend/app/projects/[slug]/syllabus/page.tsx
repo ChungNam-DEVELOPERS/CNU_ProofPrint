@@ -21,8 +21,7 @@ export default async function SyllabusPage({
           <h1 className={styles.pageTitle}>목차 · 이해도</h1>
           <p className={styles.pageDesc}>
             목차는 고정된 것이 아니라 학습하면서 계속 갱신됩니다. 이해도는 에이전트의
-            설명을 들은 것만으로는 올라가지 않고, 직접 설명하거나 문제를 맞혔을 때
-            올라갑니다.
+            설명을 들은 것만으로는 올라가지 않고, 내가 직접 설명했을 때 올라갑니다.
           </p>
         </div>
         <div className={styles.headActions}>
