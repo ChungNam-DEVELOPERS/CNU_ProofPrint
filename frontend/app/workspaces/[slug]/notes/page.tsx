@@ -2,8 +2,16 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AppShell } from "../../../components/app-shell";
 import { NoteDeck } from "../../../components/note-deck";
-import { getWorkspace } from "../../../lib/study-data";
+import { getServerActor } from "../../../server/auth";
+import {
+  getWorkspaceBySlug,
+  listGaps,
+  requireWorkspaceId,
+} from "../../../server/learning-repository";
 import styles from "../../../study.module.css";
+
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 const filters = [
   { key: "open", label: "외울 것" },
@@ -21,12 +29,11 @@ export default async function NotesPage({
 }) {
   const { slug } = await params;
   const { filter = "open" } = await searchParams;
-  const workspace = getWorkspace(slug);
-  if (!workspace) notFound();
+  const actor = await getServerActor();
+  if (!(await getWorkspaceBySlug(actor, slug))) notFound();
 
-  const notes = [...workspace.notes]
-    .filter((note) => (filter === "all" ? true : note.status === filter))
-    .sort((a, b) => b.occurrences - a.occurrences);
+  const gaps = await listGaps(await requireWorkspaceId(actor, slug));
+  const visible = gaps.filter((gap) => (filter === "all" ? true : gap.status === filter));
 
   return (
     <AppShell workspaceSlug={slug} active="notes">
@@ -51,13 +58,13 @@ export default async function NotesPage({
           >
             {item.label}{" "}
             {item.key === "all"
-              ? workspace.notes.length
-              : workspace.notes.filter((note) => note.status === item.key).length}
+              ? gaps.length
+              : gaps.filter((gap) => gap.status === item.key).length}
           </Link>
         ))}
       </div>
 
-      <NoteDeck notes={notes} />
+      <NoteDeck notes={visible} />
     </AppShell>
   );
 }

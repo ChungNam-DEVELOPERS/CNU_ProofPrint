@@ -11,39 +11,48 @@ import { ActivityFeed } from "../../components/activity-feed";
 import { AppShell } from "../../components/app-shell";
 import { LevelChip, LevelMeter } from "../../components/level-chip";
 import { ProofprintHistory } from "../../components/proofprint-history";
-import {
-  flattenTopics,
-  getWorkspace,
-  levelCounts,
-  proofprintWorkspaceSlug,
-} from "../../lib/study-data";
+import { flattenTopics, levelCounts } from "../../lib/learning";
+import { proofprintWorkspaceSlug } from "../../lib/study-data";
 import { getServerActor } from "../../server/auth";
+import {
+  getTopicTree,
+  getWorkspaceBySlug,
+  listActivity,
+  listGaps,
+  requireWorkspaceId,
+} from "../../server/learning-repository";
 import { listProofprints } from "../../server/proofprint-repository";
 import styles from "../../study.module.css";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-export default async function ProjectOverviewPage({
+export default async function WorkspaceOverviewPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const workspace = getWorkspace(slug);
+  const actor = await getServerActor();
+  const workspace = await getWorkspaceBySlug(actor, slug);
   if (!workspace) notFound();
 
-  const counts = levelCounts(workspace.topics);
-  const allTopics = flattenTopics(workspace.topics);
-  const openNotes = workspace.notes.filter((note) => note.status !== "resolved");
+  const workspaceId = await requireWorkspaceId(actor, slug);
+  const [topics, gaps, activity] = await Promise.all([
+    getTopicTree(workspaceId),
+    listGaps(workspaceId),
+    listActivity(workspaceId),
+  ]);
+
+  const counts = levelCounts(topics);
+  const allTopics = flattenTopics(topics);
+  const openGaps = gaps.filter((gap) => gap.status !== "resolved");
   const attention = allTopics.filter((topic) => topic.level === "shaky").slice(0, 4);
   const hours = Math.floor(workspace.studyMinutes / 60);
   const minutes = workspace.studyMinutes % 60;
 
   const showSubmissions = slug === proofprintWorkspaceSlug;
-  const submissions = showSubmissions
-    ? await listProofprints(await getServerActor())
-    : [];
+  const submissions = showSubmissions ? await listProofprints(actor) : [];
 
   return (
     <AppShell workspaceSlug={slug} active="overview">
@@ -103,7 +112,7 @@ export default async function ProjectOverviewPage({
             </div>
             <div className={styles.statBox}>
               <em>외울 개념</em>
-              <strong>{openNotes.length}</strong>
+              <strong>{openGaps.length}</strong>
               <span>오답노트에 남아 있음</span>
             </div>
           </div>
@@ -124,7 +133,11 @@ export default async function ProjectOverviewPage({
                 </p>
                 <div className={styles.tree}>
                   {attention.map((topic) => (
-                    <div key={topic.id} className={styles.treeRow} style={{ padding: "12px 0" }}>
+                    <div
+                      key={topic.id}
+                      className={styles.treeRow}
+                      style={{ padding: "12px 0" }}
+                    >
                       <span className={styles.treeRowMain}>
                         <strong>{topic.title}</strong>
                         {topic.evidence ? <em>{topic.evidence}</em> : null}
@@ -148,7 +161,7 @@ export default async function ProjectOverviewPage({
               <span className={styles.muted}>에이전트가 남긴 기록</span>
             </div>
             <div className={styles.timelineList}>
-              {workspace.activity.map((item) => (
+              {activity.map((item) => (
                 <div key={item.id} className={styles.timelineRow}>
                   <span className={styles.timelineWhen}>{item.at}</span>
                   <span style={{ fontSize: 13.5, lineHeight: 1.7 }}>{item.message}</span>
@@ -166,7 +179,7 @@ export default async function ProjectOverviewPage({
                 에이전트가 한 일
               </h2>
             </div>
-            <ActivityFeed items={workspace.activity} />
+            <ActivityFeed items={activity.slice(0, 6)} />
           </section>
 
           <section className={styles.card}>
@@ -179,14 +192,14 @@ export default async function ProjectOverviewPage({
                 전체 보기
               </Link>
             </div>
-            {openNotes.length === 0 ? (
+            {openGaps.length === 0 ? (
               <p className={styles.muted}>아직 기록된 개념이 없습니다.</p>
             ) : (
               <div className={styles.termList}>
-                {openNotes.slice(0, 4).map((note) => (
-                  <div key={note.id} className={styles.termRow}>
-                    <strong>{note.term}</strong>
-                    <em>{note.topicTitle}</em>
+                {openGaps.slice(0, 4).map((gap) => (
+                  <div key={gap.id} className={styles.termRow}>
+                    <strong>{gap.term}</strong>
+                    <em>{gap.topicTitle}</em>
                   </div>
                 ))}
               </div>

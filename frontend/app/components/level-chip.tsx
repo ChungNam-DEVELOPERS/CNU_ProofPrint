@@ -1,5 +1,5 @@
-import type { UnderstandingLevel } from "../lib/study-data";
-import { understandingMeta } from "../lib/study-data";
+import type { UnderstandingLevel } from "../lib/learning";
+import { understandingMeta } from "../lib/learning";
 import styles from "../study.module.css";
 
 const levelClass: Record<UnderstandingLevel, string> = {

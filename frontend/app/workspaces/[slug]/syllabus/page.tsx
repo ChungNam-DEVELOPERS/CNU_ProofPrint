@@ -2,8 +2,17 @@ import { ArrowsClockwise } from "@phosphor-icons/react/dist/ssr/ArrowsClockwise"
 import { notFound } from "next/navigation";
 import { AppShell } from "../../../components/app-shell";
 import { LevelChip, LevelMeter } from "../../../components/level-chip";
-import { getWorkspace, levelCounts } from "../../../lib/study-data";
+import { levelCounts } from "../../../lib/learning";
+import { getServerActor } from "../../../server/auth";
+import {
+  getTopicTree,
+  getWorkspaceBySlug,
+  requireWorkspaceId,
+} from "../../../server/learning-repository";
 import styles from "../../../study.module.css";
+
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 export default async function SyllabusPage({
   params,
@@ -11,8 +20,11 @@ export default async function SyllabusPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const workspace = getWorkspace(slug);
+  const actor = await getServerActor();
+  const workspace = await getWorkspaceBySlug(actor, slug);
   if (!workspace) notFound();
+
+  const topics = await getTopicTree(await requireWorkspaceId(actor, slug));
 
   return (
     <AppShell workspaceSlug={slug} active="syllabus">
@@ -31,12 +43,12 @@ export default async function SyllabusPage({
         </div>
       </div>
 
-      <section className={styles.card} style={{ marginBottom: 18 }}>
-        <LevelMeter counts={levelCounts(workspace.topics)} />
+      <section className={styles.card} style={{ marginBottom: 24 }}>
+        <LevelMeter counts={levelCounts(topics)} />
       </section>
 
       <div className={styles.tree}>
-        {workspace.topics.map((topic) => (
+        {topics.map((topic) => (
           <section key={topic.id} className={styles.treeNode}>
             <header className={styles.treeHead}>
               <h3>{topic.title}</h3>
@@ -48,7 +60,7 @@ export default async function SyllabusPage({
               </span>
             </header>
 
-            {topic.children?.length ? (
+            {topic.children.length > 0 ? (
               <div>
                 {topic.children.map((child) => (
                   <div key={child.id} className={styles.treeRow}>

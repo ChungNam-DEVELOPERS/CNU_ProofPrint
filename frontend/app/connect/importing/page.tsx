@@ -4,12 +4,18 @@ import { PencilSimpleLine } from "@phosphor-icons/react/dist/ssr/PencilSimpleLin
 import { Sparkle } from "@phosphor-icons/react/dist/ssr/Sparkle";
 import Link from "next/link";
 import { OnboardSteps } from "../../components/onboard-steps";
-import { cyberCampus, importedAssignments, workspaces } from "../../lib/study-data";
+import { cyberCampus, importedAssignments } from "../../lib/study-data";
+import { getServerActor } from "../../server/auth";
+import { listWorkspaces } from "../../server/learning-repository";
 import styles from "../../study.module.css";
 
 export const metadata = { title: "가져오는 중 | Proofprint" };
 
-export default function ImportingPage() {
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
+export default async function ImportingPage() {
+  const workspaces = await listWorkspaces(await getServerActor());
   return (
     <div className={styles.shell}>
       <div className={styles.authWrap}>

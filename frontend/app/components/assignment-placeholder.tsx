@@ -2,7 +2,7 @@ import { ArrowLeft } from "@phosphor-icons/react/dist/ssr/ArrowLeft";
 import { ChatCircleDots } from "@phosphor-icons/react/dist/ssr/ChatCircleDots";
 import { Hammer } from "@phosphor-icons/react/dist/ssr/Hammer";
 import Link from "next/link";
-import type { Assignment } from "../lib/study-data";
+import type { Assignment } from "../lib/learning";
 import styles from "../study.module.css";
 
 export function AssignmentPlaceholder({

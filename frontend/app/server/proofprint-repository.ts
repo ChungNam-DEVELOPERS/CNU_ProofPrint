@@ -204,21 +204,21 @@ async function findWorkspace(
       latest.version as version_number,
       latest.checksum as version_checksum,
       latest.submitted_at as version_submitted_at
-    from workspaces w
+    from proofprints w
     join assignments a on a.id = w.assignment_id
     join courses c on c.id = a.course_id
     join tenants tenant on tenant.id = c.tenant_id
     join users u on u.id = w.student_id and u.tenant_id = tenant.id
     left join learning_goals goal
-      on goal.workspace_id = w.id and goal.source = 'personal' and goal.position = 0
-    left join ai_uses ai on ai.workspace_id = w.id and ai.is_primary
+      on goal.proofprint_id = w.id and goal.source = 'personal' and goal.position = 0
+    left join ai_uses ai on ai.proofprint_id = w.id and ai.is_primary
     left join decision_checkpoints decision on decision.ai_use_id = ai.id
-    left join reflections reflection on reflection.workspace_id = w.id
-    left join disclosure_settings disclosure on disclosure.workspace_id = w.id
+    left join reflections reflection on reflection.proofprint_id = w.id
+    left join disclosure_settings disclosure on disclosure.proofprint_id = w.id
     left join lateral (
       select public_id, version, checksum, submitted_at
       from proofprint_versions
-      where workspace_id = w.id
+      where proofprint_id = w.id
       order by version desc
       limit 1
     ) latest on true
@@ -247,7 +247,7 @@ async function findWorkspace(
       ai.is_primary
     from ai_uses ai
     left join decision_checkpoints decision on decision.ai_use_id = ai.id
-    where ai.workspace_id = ${row.internal_workspace_id}
+    where ai.proofprint_id = ${row.internal_workspace_id}
     order by ai.occurred_at asc, ai.id asc
   `;
 
@@ -330,7 +330,7 @@ export async function saveWorkspace(
     const updated = await tx<
       Array<{ id: string; student_id: string; revision: string }>
     >`
-      update workspaces w
+      update proofprints w
       set current_step = ${input.currentStep},
           status = ${status},
           submitted_at = case when status = 'submitted' then null else submitted_at end,
@@ -349,15 +349,15 @@ export async function saveWorkspace(
     if (!workspace) throw new ConflictError();
 
     await tx`
-      insert into learning_goals (workspace_id, source, text, position)
+      insert into learning_goals (proofprint_id, source, text, position)
       values (${workspace.id}, 'personal', ${input.draft.personalGoal}, 0)
-      on conflict (workspace_id, source, position) do update
+      on conflict (proofprint_id, source, position) do update
       set text = excluded.text
     `;
 
     const aiUses = await tx<Array<{ id: string }>>`
       insert into ai_uses (
-        workspace_id, purpose, question_summary, suggestion_summary, is_primary,
+        proofprint_id, purpose, question_summary, suggestion_summary, is_primary,
         provider, model_id, source_request_id
       )
       values (
@@ -365,7 +365,7 @@ export async function saveWorkspace(
         ${input.draft.aiSummary}, true, ${input.draft.aiProvider},
         ${input.draft.aiModel}, ${input.draft.aiRequestId}
       )
-      on conflict (workspace_id) where is_primary do update
+      on conflict (proofprint_id) where is_primary do update
       set purpose = excluded.purpose,
           question_summary = excluded.question_summary,
           suggestion_summary = excluded.suggestion_summary,
@@ -386,12 +386,12 @@ export async function saveWorkspace(
     `;
 
     await tx`
-      insert into reflections (workspace_id, learned, changed_mind, remaining_question)
+      insert into reflections (proofprint_id, learned, changed_mind, remaining_question)
       values (
         ${workspace.id}, ${input.draft.learned}, ${input.draft.changed},
         ${input.draft.remainingQuestion}
       )
-      on conflict (workspace_id) do update
+      on conflict (proofprint_id) do update
       set learned = excluded.learned,
           changed_mind = excluded.changed_mind,
           remaining_question = excluded.remaining_question
@@ -399,7 +399,7 @@ export async function saveWorkspace(
 
     await tx`
       insert into audit_events (
-        actor_user_id, workspace_id, event_type, target_public_id, metadata
+        actor_user_id, proofprint_id, event_type, target_public_id, metadata
       )
       values (
         ${workspace.student_id}, ${workspace.id}, 'workspace_saved', ${workspaceId},
@@ -425,7 +425,7 @@ export async function updateDisclosure(
     const updated = await tx<
       Array<{ id: string; student_id: string; revision: string }>
     >`
-      update workspaces w
+      update proofprints w
       set revision = revision + 1
       from users u, tenants tenant
       where w.student_id = u.id
@@ -441,13 +441,13 @@ export async function updateDisclosure(
 
     await tx`
       insert into disclosure_settings (
-        workspace_id, share_purpose, share_judgment, share_reflection, share_raw
+        proofprint_id, share_purpose, share_judgment, share_reflection, share_raw
       )
       values (
         ${workspace.id}, ${input.disclosure.sharePurpose},
         ${input.disclosure.shareJudgment}, ${input.disclosure.shareReflection}, false
       )
-      on conflict (workspace_id) do update
+      on conflict (proofprint_id) do update
       set share_purpose = excluded.share_purpose,
           share_judgment = excluded.share_judgment,
           share_reflection = excluded.share_reflection,
@@ -456,7 +456,7 @@ export async function updateDisclosure(
 
     await tx`
       insert into audit_events (
-        actor_user_id, workspace_id, event_type, target_public_id, metadata
+        actor_user_id, proofprint_id, event_type, target_public_id, metadata
       )
       values (
         ${workspace.student_id}, ${workspace.id}, 'disclosure_updated', ${workspaceId},
@@ -503,7 +503,7 @@ export async function submitWorkspace(
     const updated = await tx<
       Array<{ id: string; student_id: string; revision: string }>
     >`
-      update workspaces w
+      update proofprints w
       set status = 'submitted',
           current_step = 4,
           submitted_at = ${submittedAt},
@@ -523,13 +523,13 @@ export async function submitWorkspace(
     const versions = await tx<Array<{ version: number }>>`
       select coalesce(max(version), 0)::int + 1 as version
       from proofprint_versions
-      where workspace_id = ${workspace.id}
+      where proofprint_id = ${workspace.id}
     `;
     const version = Number(versions[0]?.version ?? 1);
 
     await tx`
       insert into proofprint_versions (
-        public_id, workspace_id, version, snapshot_json, checksum, submitted_at
+        public_id, proofprint_id, version, snapshot_json, checksum, submitted_at
       )
       values (
         ${versionPublicId}, ${workspace.id}, ${version},
@@ -539,7 +539,7 @@ export async function submitWorkspace(
 
     await tx`
       insert into audit_events (
-        actor_user_id, workspace_id, event_type, target_public_id, metadata
+        actor_user_id, proofprint_id, event_type, target_public_id, metadata
       )
       values (
         ${workspace.student_id}, ${workspace.id}, 'proofprint_submitted', ${versionPublicId},
@@ -595,23 +595,23 @@ export async function listProofprints(actor: ServerActor): Promise<ProofprintHis
         0
       )::int as checkpoint_count,
       coalesce(disclosure.share_raw, false) as share_raw
-    from workspaces w
+    from proofprints w
     join assignments a on a.id = w.assignment_id
     join courses c on c.id = a.course_id
     join tenants tenant on tenant.id = c.tenant_id
     join users u on u.id = w.student_id and u.tenant_id = tenant.id
-    left join disclosure_settings disclosure on disclosure.workspace_id = w.id
+    left join disclosure_settings disclosure on disclosure.proofprint_id = w.id
     left join lateral (
       select snapshot_json
       from proofprint_versions
-      where workspace_id = w.id
+      where proofprint_id = w.id
       order by version desc
       limit 1
     ) latest on true
     left join lateral (
       select count(*)::int as count
       from ai_uses
-      where workspace_id = w.id
+      where proofprint_id = w.id
     ) checkpoint on true
     where tenant.public_id = ${actor.tenantPublicId}
       and u.external_subject = ${actor.externalSubject}

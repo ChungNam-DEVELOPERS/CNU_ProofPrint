@@ -7,10 +7,10 @@ import { EyeSlash } from "@phosphor-icons/react/dist/ssr/EyeSlash";
 import { Repeat } from "@phosphor-icons/react/dist/ssr/Repeat";
 import { Warning } from "@phosphor-icons/react/dist/ssr/Warning";
 import { useState } from "react";
-import type { Note } from "../lib/study-data";
+import type { Gap } from "../lib/learning";
 import styles from "../study.module.css";
 
-export function NoteDeck({ notes }: { notes: Note[] }) {
+export function NoteDeck({ notes }: { notes: Gap[] }) {
   const [hidden, setHidden] = useState(false);
   const [revealed, setRevealed] = useState<Set<string>>(new Set());
 

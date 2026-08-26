@@ -5,7 +5,7 @@ import { Check } from "@phosphor-icons/react/dist/ssr/Check";
 import { Plus } from "@phosphor-icons/react/dist/ssr/Plus";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import type { Workspace } from "../lib/study-data";
+import type { Workspace } from "../lib/learning";
 import styles from "../study.module.css";
 
 export function WorkspaceSwitcher({

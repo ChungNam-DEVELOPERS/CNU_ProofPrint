@@ -4,7 +4,7 @@ import { MagnifyingGlass } from "@phosphor-icons/react/dist/ssr/MagnifyingGlass"
 import { NotePencil } from "@phosphor-icons/react/dist/ssr/NotePencil";
 import { TreeStructure } from "@phosphor-icons/react/dist/ssr/TreeStructure";
 import type { ReactNode } from "react";
-import type { ActivityItem } from "../lib/study-data";
+import type { ActivityItem } from "../lib/learning";
 import styles from "../study.module.css";
 
 const toolIcon: Record<ActivityItem["tool"], ReactNode> = {

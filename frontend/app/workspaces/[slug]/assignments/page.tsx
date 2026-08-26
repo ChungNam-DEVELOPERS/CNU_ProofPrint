@@ -4,8 +4,18 @@ import { GraduationCap } from "@phosphor-icons/react/dist/ssr/GraduationCap";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AppShell } from "../../../components/app-shell";
-import { getAssignments, getWorkspace, type Assignment } from "../../../lib/study-data";
+import type { Assignment } from "../../../lib/learning";
+import { cyberCampus } from "../../../lib/study-data";
+import { getServerActor } from "../../../server/auth";
+import {
+  getWorkspaceBySlug,
+  listAssignments,
+  requireWorkspaceId,
+} from "../../../server/learning-repository";
 import styles from "../../../study.module.css";
+
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 const statusClass: Record<Assignment["status"], string> = {
   "시작 전": styles.workStatusIdle,
@@ -20,10 +30,11 @@ export default async function AssignmentsPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const workspace = getWorkspace(slug);
+  const actor = await getServerActor();
+  const workspace = await getWorkspaceBySlug(actor, slug);
   if (!workspace) notFound();
 
-  const items = getAssignments(slug);
+  const items = await listAssignments(await requireWorkspaceId(actor, slug));
 
   return (
     <AppShell workspaceSlug={slug} active="assignments">
@@ -44,7 +55,9 @@ export default async function AssignmentsPage({
             가져온 과제
             <span className={styles.countBadge}>{items.length}</span>
           </h2>
-          <span className={styles.muted}>사이버캠퍼스 · 12분 전 동기화</span>
+          <span className={styles.muted}>
+            사이버캠퍼스 · {cyberCampus.lastSyncedAt} 동기화
+          </span>
         </div>
 
         {items.length === 0 ? (

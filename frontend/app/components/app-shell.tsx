@@ -1,16 +1,23 @@
 import { Books } from "@phosphor-icons/react/dist/ssr/Books";
 import { ChatCircleDots } from "@phosphor-icons/react/dist/ssr/ChatCircleDots";
+import { CheckCircle } from "@phosphor-icons/react/dist/ssr/CheckCircle";
 import { EnvelopeSimple } from "@phosphor-icons/react/dist/ssr/EnvelopeSimple";
 import { FileText } from "@phosphor-icons/react/dist/ssr/FileText";
-import { CheckCircle } from "@phosphor-icons/react/dist/ssr/CheckCircle";
-import { PencilSimpleLine } from "@phosphor-icons/react/dist/ssr/PencilSimpleLine";
 import { NotePencil } from "@phosphor-icons/react/dist/ssr/NotePencil";
+import { PencilSimpleLine } from "@phosphor-icons/react/dist/ssr/PencilSimpleLine";
 import { PresentationChart } from "@phosphor-icons/react/dist/ssr/PresentationChart";
 import { SquaresFour } from "@phosphor-icons/react/dist/ssr/SquaresFour";
 import { TreeStructure } from "@phosphor-icons/react/dist/ssr/TreeStructure";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { cyberCampus, getAssignments, user, workspaces } from "../lib/study-data";
+import { cyberCampus, user } from "../lib/study-data";
+import { getServerActor } from "../server/auth";
+import {
+  listAssignments,
+  listGaps,
+  listWorkspaces,
+  requireWorkspaceId,
+} from "../server/learning-repository";
 import styles from "../study.module.css";
 import { WorkspaceSwitcher } from "./workspace-switcher";
 
@@ -32,7 +39,7 @@ type NavItem = {
   badge?: number;
 };
 
-export function AppShell({
+export async function AppShell({
   workspaceSlug,
   active,
   children,
@@ -41,12 +48,22 @@ export function AppShell({
   active: ShellMenu;
   children: ReactNode;
 }) {
+  const actor = await getServerActor();
+  const workspaces = await listWorkspaces(actor);
   const workspace = workspaces.find((item) => item.slug === workspaceSlug);
   const base = `/workspaces/${workspaceSlug}`;
-  const openNotes = workspace?.notes.filter((note) => note.status !== "resolved").length ?? 0;
-  const openWork = getAssignments(workspaceSlug).filter(
-    (item) => item.status !== "제출 완료",
-  ).length;
+
+  let openGaps = 0;
+  let openAssignments = 0;
+  if (workspace) {
+    const workspaceId = await requireWorkspaceId(actor, workspaceSlug);
+    const [gaps, assignments] = await Promise.all([
+      listGaps(workspaceId),
+      listAssignments(workspaceId),
+    ]);
+    openGaps = gaps.filter((gap) => gap.status !== "resolved").length;
+    openAssignments = assignments.filter((item) => item.status !== "제출 완료").length;
+  }
 
   const navItems: NavItem[] = [
     {
@@ -69,7 +86,7 @@ export function AppShell({
       hint: "사이버캠퍼스 과제",
       href: `${base}/assignments`,
       icon: <SquaresFour size={19} weight="bold" />,
-      badge: openWork,
+      badge: openAssignments,
     },
     {
       key: "syllabus",
@@ -84,7 +101,7 @@ export function AppShell({
       hint: "몰랐던 개념 암기",
       href: `${base}/notes`,
       icon: <NotePencil size={19} weight="bold" />,
-      badge: openNotes,
+      badge: openGaps,
     },
     {
       key: "materials",

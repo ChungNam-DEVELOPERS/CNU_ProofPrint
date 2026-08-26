@@ -1,16 +1,44 @@
 import { ArrowRight } from "@phosphor-icons/react/dist/ssr/ArrowRight";
 import { CheckCircle } from "@phosphor-icons/react/dist/ssr/CheckCircle";
-import { PencilSimpleLine } from "@phosphor-icons/react/dist/ssr/PencilSimpleLine";
 import { NotePencil } from "@phosphor-icons/react/dist/ssr/NotePencil";
+import { PencilSimpleLine } from "@phosphor-icons/react/dist/ssr/PencilSimpleLine";
 import { Plus } from "@phosphor-icons/react/dist/ssr/Plus";
 import Link from "next/link";
 import { LevelMeter } from "../components/level-chip";
-import { cyberCampus, levelCounts, user, workspaces } from "../lib/study-data";
+import { levelCounts } from "../lib/learning";
+import { cyberCampus, user } from "../lib/study-data";
+import { getServerActor } from "../server/auth";
+import {
+  getTopicTree,
+  listGaps,
+  listWorkspaces,
+  requireWorkspaceId,
+} from "../server/learning-repository";
 import styles from "../study.module.css";
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 export const metadata = { title: "내 워크스페이스 | Proofprint" };
 
-export default function ProjectsPage() {
+export default async function WorkspacesPage() {
+  const actor = await getServerActor();
+  const workspaces = await listWorkspaces(actor);
+
+  const cards = await Promise.all(
+    workspaces.map(async (workspace) => {
+      const workspaceId = await requireWorkspaceId(actor, workspace.slug);
+      const [topics, gaps] = await Promise.all([
+        getTopicTree(workspaceId),
+        listGaps(workspaceId),
+      ]);
+      return {
+        workspace,
+        counts: levelCounts(topics),
+        openGaps: gaps.filter((gap) => gap.status !== "resolved").length,
+      };
+    }),
+  );
+
   return (
     <div className={styles.shell}>
       <header className={styles.topbar}>
@@ -41,14 +69,14 @@ export default function ProjectsPage() {
         </div>
       </header>
 
-      <main className={styles.main} style={{ padding: "34px 44px 60px" }}>
+      <main className={styles.main} style={{ padding: "40px 46px 84px" }}>
         <div className={styles.pageHead}>
           <div>
             <h1 className={styles.pageTitle}>내 워크스페이스</h1>
             <p className={styles.pageDesc}>
-              사이버캠퍼스에서 가져온 {cyberCampus.importedCourses}개 과목으로 워크스페이스를
-              만들어 뒀습니다. 학습하는 동안 에이전트가 이해도와 오답노트를 자동으로
-              정리합니다.
+              사이버캠퍼스에서 가져온 {workspaces.length}개 과목으로 워크스페이스를 만들어
+              뒀습니다. 워크스페이스 하나가 과목 하나이고, 그 안에 학습과 과제가 함께
+              있습니다.
             </p>
           </div>
           <div className={styles.headActions}>
@@ -59,47 +87,40 @@ export default function ProjectsPage() {
         </div>
 
         <div className={styles.projGrid}>
-          {workspaces.map((workspace) => {
-            const counts = levelCounts(workspace.topics);
-            const openNotes = workspace.notes.filter(
-              (note) => note.status !== "resolved",
-            ).length;
+          {cards.map(({ workspace, counts, openGaps }) => (
+            <Link
+              key={workspace.slug}
+              href={`/workspaces/${workspace.slug}`}
+              className={styles.projCard}
+            >
+              <div className={styles.projTop}>
+                <span className={styles.projEmoji} aria-hidden="true">
+                  {workspace.emoji}
+                </span>
+                <span className={styles.projTitle}>
+                  <strong>{workspace.title}</strong>
+                  <em>
+                    {workspace.term} · {workspace.subject}
+                  </em>
+                </span>
+              </div>
 
-            return (
-              <Link
-                key={workspace.slug}
-                href={`/workspaces/${workspace.slug}`}
-                className={styles.projCard}
-              >
-                <div className={styles.projTop}>
-                  <span className={styles.projEmoji} aria-hidden="true">
-                    {workspace.emoji}
-                  </span>
-                  <span className={styles.projTitle}>
-                    <strong>{workspace.title}</strong>
-                    <em>
-                      {workspace.term} · {workspace.subject}
-                    </em>
-                  </span>
-                </div>
+              <p className={styles.projSummary}>{workspace.summary}</p>
 
-                <p className={styles.projSummary}>{workspace.summary}</p>
+              <LevelMeter counts={counts} />
 
-                <LevelMeter counts={counts} />
-
-                <div className={styles.projFoot}>
-                  <span>
-                    <NotePencil size={13} weight="bold" aria-hidden="true" /> 오답노트{" "}
-                    {openNotes}건
-                  </span>
-                  <span>
-                    {workspace.updatedAt} 갱신{" "}
-                    <ArrowRight size={12} weight="bold" aria-hidden="true" />
-                  </span>
-                </div>
-              </Link>
-            );
-          })}
+              <div className={styles.projFoot}>
+                <span>
+                  <NotePencil size={13} weight="bold" aria-hidden="true" /> 외울 개념{" "}
+                  {openGaps}개
+                </span>
+                <span>
+                  {workspace.updatedAt} 갱신{" "}
+                  <ArrowRight size={12} weight="bold" aria-hidden="true" />
+                </span>
+              </div>
+            </Link>
+          ))}
 
           <Link href="/workspaces/new" className={styles.projNew}>
             <Plus size={26} weight="bold" aria-hidden="true" />

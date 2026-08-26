@@ -2,13 +2,14 @@ import { notFound } from "next/navigation";
 import { AppShell } from "../../../../components/app-shell";
 import { AssignmentPlaceholder } from "../../../../components/assignment-placeholder";
 import { ProofprintWorkspace } from "../../../../components/proofprint-workspace";
-import {
-  getAssignment,
-  getWorkspace,
-  proofprintAssignmentSlug,
-} from "../../../../lib/study-data";
+import { proofprintAssignmentSlug } from "../../../../lib/study-data";
 import { getCnuAiMode } from "../../../../server/ai/cnu-multillm";
 import { getServerActor } from "../../../../server/auth";
+import {
+  getAssignment,
+  getWorkspaceBySlug,
+  requireWorkspaceId,
+} from "../../../../server/learning-repository";
 import { getWorkspaceByAssignmentSlug } from "../../../../server/proofprint-repository";
 
 export const dynamic = "force-dynamic";
@@ -20,8 +21,11 @@ export default async function AssignmentDetailPage({
   params: Promise<{ slug: string; itemId: string }>;
 }) {
   const { slug, itemId } = await params;
-  const assignment = getAssignment(slug, itemId);
-  if (!getWorkspace(slug) || !assignment) notFound();
+  const actor = await getServerActor();
+  if (!(await getWorkspaceBySlug(actor, slug))) notFound();
+
+  const assignment = await getAssignment(await requireWorkspaceId(actor, slug), itemId);
+  if (!assignment) notFound();
 
   if (!assignment.hasProofprint) {
     return (
@@ -31,7 +35,6 @@ export default async function AssignmentDetailPage({
     );
   }
 
-  const actor = await getServerActor();
   const record = await getWorkspaceByAssignmentSlug(actor, proofprintAssignmentSlug);
 
   return (

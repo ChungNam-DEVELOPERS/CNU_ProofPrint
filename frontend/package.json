@@ -11,7 +11,7 @@
     "db:stop": "bash scripts/local-postgres.sh stop",
     "db:status": "bash scripts/local-postgres.sh status",
     "db:migrate": "node scripts/migrate.mjs",
-    "db:seed": "node scripts/seed.mjs",
+    "db:seed": "node scripts/seed.mjs && node scripts/seed-learning.mjs",
     "db:setup": "npm run db:start && npm run db:migrate && npm run db:seed"
   },
   "dependencies": {
