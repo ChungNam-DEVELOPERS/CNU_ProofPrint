@@ -25,7 +25,7 @@ export default function ImportingPage() {
             {cyberCampus.term} 수강 정보를 가져와 프로젝트를 만들어 뒀습니다.
           </p>
 
-          <OnboardSteps current={2} />
+          <OnboardSteps current={1} />
 
           <div className={styles.importGrid}>
             <div className={styles.importStat}>

@@ -38,7 +38,7 @@ export default function ConnectPage() {
             학교 통합 로그인으로 한 번만 연결하면 이번 학기 과목과 과제를 가져옵니다.
           </p>
 
-          <OnboardSteps current={1} />
+          <OnboardSteps current={0} />
 
           <div className={styles.campusBox}>
             <GraduationCap size={26} weight="fill" aria-hidden="true" />

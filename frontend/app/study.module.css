@@ -1,28 +1,37 @@
 /* ── tokens ─────────────────────────────────────────── */
 .shell {
-  --bg: #f5f8ff;
+  --bg: #f6f9fd;
   --surface: #ffffff;
-  --line: #e6ecf8;
-  --line-soft: #f0f4fb;
-  --ink: #16233c;
-  --ink-2: #55607a;
-  --ink-3: #8b94a8;
-  --navy: #1b2f66;
-  --blue: #2563eb;
-  --blue-strong: #1d4ed8;
-  --blue-soft: #eaf1ff;
-  --blue-tint: #f4f8ff;
+  --line: #e4eaf4;
+  --line-soft: #eff3fa;
+  --ink: #1c2540;
+  --ink-2: #566079;
+  --ink-3: #8a93a8;
 
-  --solid-fg: #0f8055;
-  --solid-bg: #e6f7ef;
-  --shaky-fg: #b26a09;
-  --shaky-bg: #fdf3e2;
-  --exposed-fg: #2563eb;
-  --exposed-bg: #eaf1ff;
-  --unseen-fg: #7c8598;
-  --unseen-bg: #f0f2f7;
+  --navy: #293681;
+  --blue: #4274d9;
+  --blue-strong: #2f58b5;
+  --blue-soft: #e7eefb;
+  --blue-tint: #f5f8fe;
+  --cyan: #95ccdd;
+  --mist: #d0e7e6;
 
-  --shadow: 0 1px 2px rgba(22, 35, 60, 0.04), 0 8px 24px rgba(22, 35, 60, 0.05);
+  --danger: #e63946;
+  --danger-deep: #8b1e2d;
+  --danger-bg: #fdecec;
+  --gold: #f4d35e;
+  --steel: #457b9d;
+
+  --solid-fg: #1f7c90;
+  --solid-bg: #e3f2f6;
+  --shaky-fg: #9c7410;
+  --shaky-bg: #fcf5df;
+  --exposed-fg: #4274d9;
+  --exposed-bg: #e7eefb;
+  --unseen-fg: #858da0;
+  --unseen-bg: #eff1f6;
+
+  --shadow: 0 1px 2px rgba(28, 37, 64, 0.04), 0 10px 28px rgba(28, 37, 64, 0.055);
 
   min-height: 100vh;
   background: var(--bg);
@@ -35,7 +44,8 @@
   top: 0;
   z-index: 30;
   height: 68px;
-  padding: 0 28px;
+  padding: 0 24px;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -186,6 +196,7 @@
   flex-direction: column;
   align-items: flex-start;
   line-height: 1.3;
+  white-space: nowrap;
 }
 
 .userMeta em {
@@ -343,7 +354,7 @@
 /* ── layout ─────────────────────────────────────────── */
 .body {
   display: grid;
-  grid-template-columns: 236px minmax(0, 1fr);
+  grid-template-columns: 250px minmax(0, 1fr);
   align-items: start;
 }
 
@@ -351,35 +362,27 @@
   position: sticky;
   top: 68px;
   height: calc(100vh - 68px);
-  padding: 20px 14px;
+  padding: 26px 16px;
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 24px;
   overflow-y: auto;
   border-right: 1px solid var(--line);
   background: var(--surface);
 }
 
-.navGroup nav {
+.navList {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-}
-
-.navGroupTitle {
-  margin: 0 0 8px 10px;
-  color: var(--ink-3);
-  font-size: 11.5px;
-  font-weight: 800;
-  letter-spacing: 0.05em;
+  gap: 5px;
 }
 
 .navItem {
   display: flex;
   align-items: center;
-  gap: 11px;
-  padding: 9px 10px;
-  border-radius: 9px;
+  gap: 12px;
+  padding: 12px 12px;
+  border-radius: 11px;
   color: var(--ink-2);
   text-decoration: none;
 }
@@ -470,7 +473,7 @@
 
 .main {
   min-width: 0;
-  padding: 28px 34px 56px;
+  padding: 40px 46px 84px;
 }
 
 /* ── page primitives ────────────────────────────────── */
@@ -478,8 +481,8 @@
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 20px;
-  margin-bottom: 22px;
+  gap: 24px;
+  margin-bottom: 34px;
 }
 
 .pageTitle {
@@ -490,7 +493,7 @@
 }
 
 .pageDesc {
-  margin: 7px 0 0;
+  margin: 11px 0 0;
   max-width: 720px;
   color: var(--ink-2);
   font-size: 14.5px;
@@ -535,7 +538,7 @@
 }
 
 .card {
-  padding: 22px 24px;
+  padding: 28px 30px;
   border: 1px solid var(--line);
   border-radius: 16px;
   background: var(--surface);
@@ -546,8 +549,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
-  margin-bottom: 14px;
+  gap: 16px;
+  margin-bottom: 20px;
 }
 
 .cardTitle {
@@ -568,15 +571,15 @@
 
 .grid2 {
   display: grid;
-  grid-template-columns: minmax(0, 1.55fr) minmax(300px, 1fr);
-  gap: 18px;
+  grid-template-columns: minmax(0, 1.55fr) minmax(310px, 1fr);
+  gap: 24px;
   align-items: start;
 }
 
 .stack {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 24px;
 }
 
 .muted {
@@ -629,19 +632,19 @@
 }
 
 .meterSolid {
-  background: #35a06a;
+  background: #4fa6b8;
 }
 
 .meterShaky {
-  background: #e0a03e;
+  background: #f4d35e;
 }
 
 .meterExposed {
-  background: #6f9be0;
+  background: #4274d9;
 }
 
 .meterUnseen {
-  background: #d7dae1;
+  background: #d6dce7;
 }
 
 .legend {
@@ -672,7 +675,7 @@
 
 /* ── overview ───────────────────────────────────────── */
 .statusCard {
-  padding: 24px 26px;
+  padding: 30px 32px;
   border: 1px solid #dbe6fb;
   border-radius: 16px;
   background: linear-gradient(135deg, #eff5ff 0%, #ffffff 62%);
@@ -699,16 +702,16 @@
 .statusText {
   margin: 0;
   font-size: 16.5px;
-  line-height: 1.72;
+  line-height: 1.85;
   color: var(--ink);
 }
 
 .nextAction {
   display: flex;
   align-items: flex-start;
-  gap: 11px;
-  margin-top: 17px;
-  padding: 14px 16px;
+  gap: 13px;
+  margin-top: 24px;
+  padding: 18px 20px;
   border-radius: 10px;
   background: #eef3fc;
 }
@@ -730,11 +733,11 @@
 .statRow {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  gap: 16px;
 }
 
 .statBox {
-  padding: 15px 16px;
+  padding: 20px 22px;
   border: 1px solid var(--line);
   border-radius: 11px;
   background: var(--surface);
@@ -769,8 +772,8 @@
 
 .activityItem {
   display: flex;
-  gap: 12px;
-  padding: 12px 0;
+  gap: 14px;
+  padding: 16px 0;
   border-top: 1px solid var(--line-soft);
 }
 
@@ -825,7 +828,7 @@
 .tree {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 14px;
 }
 
 .treeNode {
@@ -839,8 +842,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 15px 20px;
+  gap: 14px;
+  padding: 18px 22px;
   background: var(--blue-tint);
   border-bottom: 1px solid var(--line-soft);
 }
@@ -855,8 +858,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
-  padding: 12px 18px 12px 30px;
+  gap: 16px;
+  padding: 16px 22px 16px 34px;
   border-top: 1px solid var(--line-soft);
 }
 
@@ -898,8 +901,8 @@
 /* ── notes ──────────────────────────────────────────── */
 .filterRow {
   display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
+  gap: 9px;
+  margin-bottom: 24px;
   flex-wrap: wrap;
 }
 
@@ -923,7 +926,7 @@
 .noteList {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 18px;
 }
 
 .noteCard {
@@ -1019,8 +1022,8 @@
 .matRow {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 14px 0;
+  gap: 16px;
+  padding: 18px 0;
   border-top: 1px solid var(--line-soft);
 }
 
@@ -1101,10 +1104,10 @@
 
 .chatList {
   flex: 1;
-  padding: 22px;
+  padding: 28px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 26px;
   overflow-y: auto;
 }
 
@@ -1172,8 +1175,8 @@
 
 .composer {
   display: flex;
-  gap: 10px;
-  padding: 14px 16px;
+  gap: 12px;
+  padding: 18px 20px;
   border-top: 1px solid var(--line);
   background: #fbfcfd;
 }
@@ -1197,7 +1200,7 @@
 }
 
 .toolCard {
-  padding: 17px 18px;
+  padding: 22px 22px;
   border: 1px solid var(--line);
   border-radius: 14px;
   background: var(--surface);
@@ -1237,15 +1240,15 @@
 /* ── project gallery ────────────────────────────────── */
 .projGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 22px;
 }
 
 .projCard {
   display: flex;
   flex-direction: column;
-  gap: 13px;
-  padding: 20px 21px;
+  gap: 16px;
+  padding: 26px 26px;
   border: 1px solid var(--line);
   border-radius: 13px;
   background: var(--surface);
@@ -1480,9 +1483,9 @@
 
 .timelineRow {
   display: grid;
-  grid-template-columns: 92px 1fr;
-  gap: 16px;
-  padding: 14px 0;
+  grid-template-columns: 96px 1fr;
+  gap: 20px;
+  padding: 17px 0;
   border-top: 1px solid var(--line-soft);
 }
 
@@ -1769,8 +1772,8 @@
 .importRow {
   display: flex;
   align-items: center;
-  gap: 13px;
-  padding: 13px 0;
+  gap: 15px;
+  padding: 17px 0;
   border-top: 1px solid var(--line-soft);
 }
 
@@ -1880,9 +1883,9 @@
 .workRow {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 15px 16px;
-  margin: 0 -16px;
+  gap: 16px;
+  padding: 20px;
+  margin: 0 -20px;
   border-radius: 12px;
   color: inherit;
   text-decoration: none;
@@ -1962,4 +1965,141 @@
   font-size: 11.5px;
   font-weight: 700;
   white-space: nowrap;
+}
+
+/* ── 오답노트: 암기 카드 ────────────────────────────── */
+.deckBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.termTitle {
+  margin: 0 0 16px;
+  font-size: 23px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--navy);
+  line-height: 1.4;
+}
+
+.termDefinition {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.85;
+  color: var(--ink);
+}
+
+.termKey {
+  margin-top: 18px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: var(--blue-tint);
+  border: 1px solid var(--line);
+  color: var(--ink-2);
+  font-size: 14.5px;
+  line-height: 1.8;
+}
+
+.termKey strong {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--navy);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.termConfused {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 16px 0 0;
+  padding: 13px 16px;
+  border-radius: 12px;
+  background: var(--danger-bg);
+  color: var(--danger-deep);
+  font-size: 13.5px;
+  line-height: 1.7;
+}
+
+.termConfused em {
+  font-style: normal;
+  font-weight: 800;
+}
+
+.maskBox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 108px;
+  padding: 20px;
+  border: 1.5px dashed #c9d6ee;
+  border-radius: 12px;
+  background: var(--blue-tint);
+  color: var(--ink-3);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.maskBox:hover {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+  color: var(--blue-strong);
+}
+
+.noteFoot {
+  margin-top: 20px;
+  padding-top: 18px;
+}
+
+/* 학습 현황의 외울 개념 요약 */
+.termList {
+  display: flex;
+  flex-direction: column;
+}
+
+.termRow {
+  padding: 13px 0;
+  border-top: 1px solid var(--line-soft);
+  line-height: 1.5;
+}
+
+.termRow:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.termRow strong {
+  display: block;
+  font-size: 14.5px;
+  font-weight: 750;
+  color: var(--navy);
+}
+
+.termRow em {
+  color: var(--ink-3);
+  font-size: 12px;
+  font-style: normal;
+}
+
+@media (max-width: 1240px) {
+  .topbarLink {
+    display: none;
+  }
+}
+
+@media (max-width: 1080px) {
+  .syncPill {
+    display: none;
+  }
+
+  .userMeta {
+    display: none;
+  }
 }

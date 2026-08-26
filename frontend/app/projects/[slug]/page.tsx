@@ -1,15 +1,28 @@
 import { ArrowRight } from "@phosphor-icons/react/dist/ssr/ArrowRight";
 import { ChatCircleDots } from "@phosphor-icons/react/dist/ssr/ChatCircleDots";
+import { DownloadSimple } from "@phosphor-icons/react/dist/ssr/DownloadSimple";
 import { Lightning } from "@phosphor-icons/react/dist/ssr/Lightning";
 import { NotePencil } from "@phosphor-icons/react/dist/ssr/NotePencil";
+import { Receipt } from "@phosphor-icons/react/dist/ssr/Receipt";
 import { Target } from "@phosphor-icons/react/dist/ssr/Target";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActivityFeed } from "../../components/activity-feed";
 import { AppShell } from "../../components/app-shell";
 import { LevelChip, LevelMeter } from "../../components/level-chip";
-import { flattenTopics, getProject, levelCounts } from "../../lib/study-data";
+import { ProofprintHistory } from "../../components/proofprint-history";
+import {
+  flattenTopics,
+  getProject,
+  levelCounts,
+  proofprintProjectSlug,
+} from "../../lib/study-data";
+import { getServerActor } from "../../server/auth";
+import { listProofprints } from "../../server/proofprint-repository";
 import styles from "../../study.module.css";
+
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 export default async function ProjectOverviewPage({
   params,
@@ -21,12 +34,16 @@ export default async function ProjectOverviewPage({
   if (!project) notFound();
 
   const counts = levelCounts(project.topics);
+  const allTopics = flattenTopics(project.topics);
   const openNotes = project.notes.filter((note) => note.status !== "resolved");
-  const attention = flattenTopics(project.topics)
-    .filter((topic) => topic.level === "shaky")
-    .slice(0, 4);
+  const attention = allTopics.filter((topic) => topic.level === "shaky").slice(0, 4);
   const hours = Math.floor(project.studyMinutes / 60);
   const minutes = project.studyMinutes % 60;
+
+  const showSubmissions = slug === proofprintProjectSlug;
+  const submissions = showSubmissions
+    ? await listProofprints(await getServerActor())
+    : [];
 
   return (
     <AppShell projectSlug={slug} active="overview">
@@ -34,10 +51,14 @@ export default async function ProjectOverviewPage({
         <div>
           <h1 className={styles.pageTitle}>학습 현황</h1>
           <p className={styles.pageDesc}>
-            {project.title} · {project.term}
+            {project.title} · {project.term} — 지금 상태와 지금까지의 학습 기록을 함께
+            봅니다.
           </p>
         </div>
         <div className={styles.headActions}>
+          <button type="button" className={styles.btn}>
+            <DownloadSimple size={16} weight="bold" aria-hidden="true" /> 기록 내보내기
+          </button>
           <Link
             href={`/projects/${slug}/study`}
             className={`${styles.btn} ${styles.btnPrimary}`}
@@ -76,14 +97,14 @@ export default async function ProjectOverviewPage({
               <em>설명 가능한 주제</em>
               <strong>
                 {counts.solid}
-                <span style={{ fontSize: 15 }}> / {flattenTopics(project.topics).length}</span>
+                <span style={{ fontSize: 15 }}> / {allTopics.length}</span>
               </strong>
               <span>직접 설명해서 확인됨</span>
             </div>
             <div className={styles.statBox}>
-              <em>열린 오답노트</em>
+              <em>외울 개념</em>
               <strong>{openNotes.length}</strong>
-              <span>아직 해결하지 않음</span>
+              <span>오답노트에 남아 있음</span>
             </div>
           </div>
 
@@ -97,13 +118,13 @@ export default async function ProjectOverviewPage({
             <LevelMeter counts={counts} />
 
             {attention.length > 0 ? (
-              <div style={{ marginTop: 18 }}>
-                <p className={styles.muted} style={{ marginBottom: 10, fontWeight: 700 }}>
+              <div style={{ marginTop: 26 }}>
+                <p className={styles.muted} style={{ marginBottom: 12, fontWeight: 700 }}>
                   지금 흔들리는 주제
                 </p>
                 <div className={styles.tree}>
                   {attention.map((topic) => (
-                    <div key={topic.id} className={styles.treeRow} style={{ paddingLeft: 0 }}>
+                    <div key={topic.id} className={styles.treeRow} style={{ padding: "12px 0" }}>
                       <span className={styles.treeRowMain}>
                         <strong>{topic.title}</strong>
                         {topic.evidence ? <em>{topic.evidence}</em> : null}
@@ -117,6 +138,23 @@ export default async function ProjectOverviewPage({
                 </div>
               </div>
             ) : null}
+          </section>
+
+          <section className={styles.card}>
+            <div className={styles.cardHead}>
+              <h2 className={styles.cardTitle}>
+                <Receipt size={17} weight="bold" aria-hidden="true" /> 학습 흐름
+              </h2>
+              <span className={styles.muted}>에이전트가 남긴 기록</span>
+            </div>
+            <div className={styles.timelineList}>
+              {project.activity.map((item) => (
+                <div key={item.id} className={styles.timelineRow}>
+                  <span className={styles.timelineWhen}>{item.at}</span>
+                  <span style={{ fontSize: 13.5, lineHeight: 1.7 }}>{item.message}</span>
+                </div>
+              ))}
+            </div>
           </section>
         </div>
 
@@ -135,24 +173,20 @@ export default async function ProjectOverviewPage({
             <div className={styles.cardHead}>
               <h2 className={styles.cardTitle}>
                 <NotePencil size={17} weight="bold" aria-hidden="true" />
-                최근 오답노트
+                외울 개념
               </h2>
               <Link href={`/projects/${slug}/notes`} className={styles.cardLink}>
                 전체 보기
               </Link>
             </div>
             {openNotes.length === 0 ? (
-              <p className={styles.muted}>아직 기록된 오답이 없습니다.</p>
+              <p className={styles.muted}>아직 기록된 개념이 없습니다.</p>
             ) : (
-              <div className={styles.tree}>
-                {openNotes.slice(0, 3).map((note) => (
-                  <div key={note.id} className={styles.treeRow} style={{ paddingLeft: 0 }}>
-                    <span className={styles.treeRowMain}>
-                      <strong style={{ fontWeight: 700 }}>{note.title}</strong>
-                      <em>
-                        {note.topicTitle} · {note.occurrences}회 반복
-                      </em>
-                    </span>
+              <div className={styles.termList}>
+                {openNotes.slice(0, 4).map((note) => (
+                  <div key={note.id} className={styles.termRow}>
+                    <strong>{note.term}</strong>
+                    <em>{note.topicTitle}</em>
                   </div>
                 ))}
               </div>
@@ -160,6 +194,12 @@ export default async function ProjectOverviewPage({
           </section>
         </div>
       </div>
+
+      {showSubmissions ? (
+        <div style={{ marginTop: 24 }}>
+          <ProofprintHistory initialItems={submissions} />
+        </div>
+      ) : null}
     </AppShell>
   );
 }

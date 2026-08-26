@@ -28,26 +28,24 @@ DB만 제어할 때는 `npm run db:start`, `db:status`, `db:stop`. 마이그레�
 ## 화면 흐름
 
 ```
-/            랜딩
-/signup      회원가입
+/            → /projects (프로토타입은 항상 로그인된 상태로 시작)
+/projects    내 프로젝트
 /connect     사이버캠퍼스 SSO 연동
 /connect/importing   읽어온 과목·과제 확인 → 프로젝트 자동 생성
-/projects    내 프로젝트
 ```
 
 프로젝트 안에서는 사이드바로 자유롭게 이동한다.
 
 | 경로 | 화면 |
 | --- | --- |
-| `/projects/[slug]` | 학습 현황 — 지금 상태, 이해도 요약, 에이전트 활동 |
+| `/projects/[slug]` | 학습 현황 — 지금 상태, 이해도, 학습 흐름, 제출 이력 |
 | `/projects/[slug]/study` | 학습하기 — 에이전트 대화와 도구 호출 |
 | `/projects/[slug]/workspace` | 작업공간 — 과제(사캠)와 개인 학습 |
 | `/projects/[slug]/workspace/[itemId]` | 항목별 작업공간 (과제는 Proofprint 5단계) |
 | `/projects/[slug]/workspace/[itemId]/result` | 1페이지 결과·공개 범위·제출 |
 | `/projects/[slug]/syllabus` | 목차 · 이해도 |
-| `/projects/[slug]/notes` | 오답노트 |
+| `/projects/[slug]/notes` | 오답노트 — 몰랐던 개념 키워드 암기 카드 |
 | `/projects/[slug]/materials` | 학습 자료 |
-| `/projects/[slug]/record` | 학습 기록과 제출 이력 |
 
 ## 데이터 현황
 

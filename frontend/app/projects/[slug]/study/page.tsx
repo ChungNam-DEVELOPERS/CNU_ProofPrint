@@ -154,13 +154,13 @@ export default async function StudyPage({
 
           <section className={styles.toolCard}>
             <h2 className={styles.toolTitle}>
-              <NotePencil size={15} weight="bold" aria-hidden="true" /> 이번 대화에서 기록된 것
+              <NotePencil size={15} weight="bold" aria-hidden="true" /> 외울 개념으로 남긴 것
             </h2>
             <div className={styles.toolList}>
               {openNotes.slice(0, 3).map((note) => (
                 <div key={note.id} className={styles.toolItem}>
                   <span>
-                    <strong>{note.title}</strong>
+                    <strong>{note.term}</strong>
                     <div>
                       {note.topicTitle} · {note.occurrences}회
                     </div>

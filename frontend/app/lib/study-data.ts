@@ -22,10 +22,15 @@ export type Topic = {
 export type Note = {
   id: string;
   topicTitle: string;
-  kind: "개념" | "공식" | "오해";
-  title: string;
-  detail: string;
-  correction: string;
+  kind: "개념" | "공식" | "정리" | "용어";
+  /** 외울 키워드 */
+  term: string;
+  /** 한 줄 정의 — 암기 대상 */
+  definition: string;
+  /** 반드시 같이 외워야 하는 조건이나 단서 */
+  keyPoint: string;
+  /** 이것과 헷갈렸다 */
+  confusedWith: string | null;
   occurrences: number;
   status: "open" | "reviewing" | "resolved";
   lastSeen: string;
@@ -182,48 +187,70 @@ export const projects: Project[] = [
     notes: [
       {
         id: "n1",
-        topicTitle: "대각화 가능 조건",
+        topicTitle: "고유값과 고유벡터",
         kind: "개념",
-        title: "고유값이 중복되면 대각화가 불가능하다고 생각함",
-        detail:
-          "고유값에 중복도가 있으면 무조건 대각화가 안 된다고 답했습니다.",
-        correction:
-          "중복 자체는 문제가 아니고, 각 고유값의 기하적 중복도와 대수적 중복도가 같아야 대각화가 가능합니다.",
+        term: "대각화 가능 조건",
+        definition:
+          "n×n 행렬 A가 서로 일차독립인 고유벡터 n개를 가지면 대각화할 수 있다.",
+        keyPoint:
+          "각 고유값의 기하적 중복도 = 대수적 중복도. 중복 자체는 문제가 아니다.",
+        confusedWith: "고유값이 겹치면 무조건 대각화가 안 된다",
         occurrences: 3,
         status: "open",
         lastSeen: "12분 전",
       },
       {
         id: "n2",
-        topicTitle: "특성방정식",
+        topicTitle: "고유값과 고유벡터",
         kind: "공식",
-        title: "det(A - λI) 의 부호를 반대로 씀",
-        detail: "det(λI - A) 와 혼용해서 3차 이상에서 부호가 틀렸습니다.",
-        correction:
-          "두 식은 (-1)^n 만큼 차이가 납니다. 홀수 차수에서는 부호가 뒤집히므로 한 가지 형태로 고정해서 쓰는 편이 안전합니다.",
+        term: "특성방정식",
+        definition:
+          "det(A − λI) = 0 을 만족하는 λ가 A의 고유값이다.",
+        keyPoint:
+          "det(λI − A) 와는 (−1)ⁿ 만큼 차이 난다. 한 형태로 고정해서 쓴다.",
+        confusedWith: "det(λI − A) 와 언제나 같다",
         occurrences: 2,
         status: "open",
         lastSeen: "3분 전",
       },
       {
         id: "n3",
-        topicTitle: "행렬식의 성질",
-        kind: "오해",
-        title: "det(A+B) = det(A) + det(B) 로 계산함",
-        detail: "행렬식이 선형이라고 가정하고 전개했습니다.",
-        correction:
-          "행렬식은 전체 행렬에 대해 선형이 아닙니다. 한 행씩 고정했을 때만 다중선형입니다.",
+        topicTitle: "고유공간",
+        kind: "용어",
+        term: "기하적 중복도",
+        definition:
+          "고유값 λ에 대한 고유공간의 차원, 즉 dim(null(A − λI)).",
+        keyPoint:
+          "항상 대수적 중복도보다 작거나 같다.",
+        confusedWith: null,
+        occurrences: 1,
+        status: "open",
+        lastSeen: "26분 전",
+      },
+      {
+        id: "n4",
+        topicTitle: "행렬식",
+        kind: "정리",
+        term: "행렬식의 다중선형성",
+        definition:
+          "행렬식은 한 행씩 고정했을 때만 선형이다.",
+        keyPoint:
+          "det(A + B) ≠ det(A) + det(B). 전체에 대해서는 선형이 아니다.",
+        confusedWith: "행렬식이 전체적으로 선형이다",
         occurrences: 1,
         status: "reviewing",
         lastSeen: "8월 24일",
       },
       {
-        id: "n4",
-        topicTitle: "일차독립과 기저",
-        kind: "개념",
-        title: "생성집합과 기저를 같은 것으로 봄",
-        detail: "생성만 하면 기저라고 답했습니다.",
-        correction: "기저는 생성 + 일차독립을 모두 만족해야 합니다.",
+        id: "n5",
+        topicTitle: "벡터공간",
+        kind: "용어",
+        term: "기저",
+        definition:
+          "벡터공간을 생성하면서 동시에 일차독립인 벡터 집합.",
+        keyPoint:
+          "생성만으로는 기저가 아니다. 두 조건을 모두 만족해야 한다.",
+        confusedWith: "생성집합",
         occurrences: 1,
         status: "resolved",
         lastSeen: "8월 21일",
@@ -278,12 +305,29 @@ export const projects: Project[] = [
     notes: [
       {
         id: "dn1",
-        topicTitle: "기능·비기능 요구 구분",
-        kind: "오해",
-        title: "«3초 이내 응답» 을 기능 요구로 분류함",
-        detail: "성능 조건을 기능 목록에 넣었습니다.",
-        correction: "응답 시간은 비기능 요구(성능)입니다. 무엇을 하는가가 아니라 어떻게 잘 하는가에 대한 조건입니다.",
+        topicTitle: "요구사항 도출",
+        kind: "개념",
+        term: "비기능 요구사항",
+        definition:
+          "시스템이 무엇을 하는가가 아니라, 얼마나 잘 하는가에 대한 조건.",
+        keyPoint:
+          "성능·보안·가용성·사용성이 여기에 속한다. «3초 이내 응답»은 비기능이다.",
+        confusedWith: "기능 요구사항",
         occurrences: 2,
+        status: "open",
+        lastSeen: "8월 25일",
+      },
+      {
+        id: "dn2",
+        topicTitle: "우선순위 결정",
+        kind: "용어",
+        term: "MoSCoW",
+        definition:
+          "요구사항을 Must·Should·Could·Won't 네 등급으로 나누는 우선순위 기법.",
+        keyPoint:
+          "Must는 하나라도 빠지면 제품이 성립하지 않는 것만 넣는다.",
+        confusedWith: null,
+        occurrences: 1,
         status: "open",
         lastSeen: "8월 25일",
       },
@@ -334,10 +378,27 @@ export const projects: Project[] = [
         id: "on1",
         topicTitle: "세마포어",
         kind: "개념",
-        title: "뮤텍스와 이진 세마포어를 같은 것으로 설명함",
-        detail: "둘 다 0/1이니 동일하다고 답했습니다.",
-        correction: "뮤텍스는 소유권 개념이 있어 잠근 스레드만 해제할 수 있습니다. 이진 세마포어는 다른 스레드도 signal 할 수 있습니다.",
+        term: "뮤텍스 vs 이진 세마포어",
+        definition:
+          "뮤텍스는 소유권이 있고, 이진 세마포어는 소유권이 없다.",
+        keyPoint:
+          "뮤텍스는 잠근 스레드만 해제할 수 있다. 세마포어는 다른 스레드도 signal 가능.",
+        confusedWith: "둘 다 0/1이니 같은 것",
         occurrences: 2,
+        status: "open",
+        lastSeen: "어제",
+      },
+      {
+        id: "on2",
+        topicTitle: "동기화",
+        kind: "정리",
+        term: "교착 상태 4조건",
+        definition:
+          "상호배제 · 점유와 대기 · 비선점 · 순환 대기.",
+        keyPoint:
+          "네 조건이 동시에 성립해야 교착이 생긴다. 하나만 깨도 예방된다.",
+        confusedWith: null,
+        occurrences: 1,
         status: "open",
         lastSeen: "어제",
       },

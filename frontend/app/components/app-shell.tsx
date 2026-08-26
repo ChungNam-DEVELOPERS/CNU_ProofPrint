@@ -6,7 +6,6 @@ import { CheckCircle } from "@phosphor-icons/react/dist/ssr/CheckCircle";
 import { PencilSimpleLine } from "@phosphor-icons/react/dist/ssr/PencilSimpleLine";
 import { NotePencil } from "@phosphor-icons/react/dist/ssr/NotePencil";
 import { PresentationChart } from "@phosphor-icons/react/dist/ssr/PresentationChart";
-import { Receipt } from "@phosphor-icons/react/dist/ssr/Receipt";
 import { SquaresFour } from "@phosphor-icons/react/dist/ssr/SquaresFour";
 import { TreeStructure } from "@phosphor-icons/react/dist/ssr/TreeStructure";
 import Link from "next/link";
@@ -22,7 +21,6 @@ export type ShellMenu =
   | "syllabus"
   | "notes"
   | "materials"
-  | "record"
   | "none";
 
 type NavItem = {
@@ -50,77 +48,50 @@ export function AppShell({
     (item) => item.status !== "제출 완료",
   ).length;
 
-  const groups: { title: string; items: NavItem[] }[] = [
+  const navItems: NavItem[] = [
     {
-      title: "학습",
-      items: [
-        {
-          key: "overview",
-          label: "학습 현황",
-          hint: "지금 어디까지 왔는지",
-          href: base,
-          icon: <PresentationChart size={19} weight="bold" />,
-        },
-        {
-          key: "study",
-          label: "학습하기",
-          hint: "에이전트와 공부",
-          href: `${base}/study`,
-          icon: <ChatCircleDots size={19} weight="bold" />,
-        },
-      ],
+      key: "overview",
+      label: "학습 현황",
+      hint: "지금 어디까지 왔는지",
+      href: base,
+      icon: <PresentationChart size={19} weight="bold" />,
     },
     {
-      title: "작업",
-      items: [
-        {
-          key: "workspace",
-          label: "작업공간",
-          hint: "과제 · 개인 학습",
-          href: `${base}/workspace`,
-          icon: <SquaresFour size={19} weight="bold" />,
-          badge: openWork,
-        },
-      ],
+      key: "study",
+      label: "학습하기",
+      hint: "에이전트와 공부",
+      href: `${base}/study`,
+      icon: <ChatCircleDots size={19} weight="bold" />,
     },
     {
-      title: "점검",
-      items: [
-        {
-          key: "syllabus",
-          label: "목차 · 이해도",
-          hint: "단원별 상태",
-          href: `${base}/syllabus`,
-          icon: <TreeStructure size={19} weight="bold" />,
-        },
-        {
-          key: "notes",
-          label: "오답노트",
-          hint: "몰랐던 것 모음",
-          href: `${base}/notes`,
-          icon: <NotePencil size={19} weight="bold" />,
-          badge: openNotes,
-        },
-      ],
+      key: "workspace",
+      label: "작업공간",
+      hint: "과제 · 개인 학습",
+      href: `${base}/workspace`,
+      icon: <SquaresFour size={19} weight="bold" />,
+      badge: openWork,
     },
     {
-      title: "자료 · 기록",
-      items: [
-        {
-          key: "materials",
-          label: "학습 자료",
-          hint: "내가 올린 자료",
-          href: `${base}/materials`,
-          icon: <FileText size={19} weight="bold" />,
-        },
-        {
-          key: "record",
-          label: "학습 기록",
-          hint: "Proofprint",
-          href: `${base}/record`,
-          icon: <Receipt size={19} weight="bold" />,
-        },
-      ],
+      key: "syllabus",
+      label: "목차 · 이해도",
+      hint: "단원별 상태",
+      href: `${base}/syllabus`,
+      icon: <TreeStructure size={19} weight="bold" />,
+    },
+    {
+      key: "notes",
+      label: "오답노트",
+      hint: "몰랐던 개념 암기",
+      href: `${base}/notes`,
+      icon: <NotePencil size={19} weight="bold" />,
+      badge: openNotes,
+    },
+    {
+      key: "materials",
+      label: "학습 자료",
+      hint: "내가 올린 자료",
+      href: `${base}/materials`,
+      icon: <FileText size={19} weight="bold" />,
     },
   ];
 
@@ -167,36 +138,29 @@ export function AppShell({
 
       <div className={styles.body}>
         <aside className={styles.sidenav} aria-label="프로젝트 메뉴">
-          {groups.map((group) => (
-            <section key={group.title} className={styles.navGroup}>
-              <p className={styles.navGroupTitle}>{group.title}</p>
-              <nav aria-label={group.title}>
-                {group.items.map((item) => (
-                  <Link
-                    key={item.key}
-                    href={item.href}
-                    aria-current={active === item.key ? "page" : undefined}
-                    className={
-                      active === item.key
-                        ? `${styles.navItem} ${styles.navItemActive}`
-                        : styles.navItem
-                    }
-                  >
-                    <span className={styles.navIcon} aria-hidden="true">
-                      {item.icon}
-                    </span>
-                    <span className={styles.navText}>
-                      <strong>{item.label}</strong>
-                      <em>{item.hint}</em>
-                    </span>
-                    {item.badge ? (
-                      <span className={styles.navBadge}>{item.badge}</span>
-                    ) : null}
-                  </Link>
-                ))}
-              </nav>
-            </section>
-          ))}
+          <nav className={styles.navList} aria-label="프로젝트 메뉴">
+            {navItems.map((item) => (
+              <Link
+                key={item.key}
+                href={item.href}
+                aria-current={active === item.key ? "page" : undefined}
+                className={
+                  active === item.key
+                    ? `${styles.navItem} ${styles.navItemActive}`
+                    : styles.navItem
+                }
+              >
+                <span className={styles.navIcon} aria-hidden="true">
+                  {item.icon}
+                </span>
+                <span className={styles.navText}>
+                  <strong>{item.label}</strong>
+                  <em>{item.hint}</em>
+                </span>
+                {item.badge ? <span className={styles.navBadge}>{item.badge}</span> : null}
+              </Link>
+            ))}
+          </nav>
 
           {project ? (
             <div className={styles.navFooter}>
