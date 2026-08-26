@@ -52,7 +52,7 @@ export type ActivityItem = {
   message: string;
 };
 
-export type Project = {
+export type Workspace = {
   slug: string;
   title: string;
   subject: string;
@@ -126,7 +126,7 @@ export const importedAssignments: ImportedItem[] = [
   },
 ];
 
-export const projects: Project[] = [
+export const workspaces: Workspace[] = [
   {
     slug: "linear-algebra",
     title: "선형대수학",
@@ -412,10 +412,9 @@ export const projects: Project[] = [
   },
 ];
 
-export type WorkItem = {
+export type Assignment = {
   id: string;
-  projectSlug: string;
-  kind: "assignment" | "self";
+  workspaceSlug: string;
   title: string;
   source: "사이버캠퍼스" | "직접 추가";
   due: string | null;
@@ -426,11 +425,10 @@ export type WorkItem = {
   hasProofprint: boolean;
 };
 
-export const workItems: WorkItem[] = [
+export const assignments: Assignment[] = [
   {
     id: "campus-service-design",
-    projectSlug: "adventure-design",
-    kind: "assignment",
+    workspaceSlug: "adventure-design",
     title: "캠퍼스 문제 해결 서비스 설계",
     source: "사이버캠퍼스",
     due: "9월 18일 23:59",
@@ -442,8 +440,7 @@ export const workItems: WorkItem[] = [
   },
   {
     id: "user-interview",
-    projectSlug: "adventure-design",
-    kind: "assignment",
+    workspaceSlug: "adventure-design",
     title: "사용자 인터뷰 분석 보고서",
     source: "사이버캠퍼스",
     due: "9월 11일 18:00",
@@ -454,8 +451,7 @@ export const workItems: WorkItem[] = [
   },
   {
     id: "eigen-exercise",
-    projectSlug: "linear-algebra",
-    kind: "assignment",
+    workspaceSlug: "linear-algebra",
     title: "3주차 연습문제 (고유값)",
     source: "사이버캠퍼스",
     due: "9월 2일 18:00",
@@ -465,22 +461,8 @@ export const workItems: WorkItem[] = [
     hasProofprint: false,
   },
   {
-    id: "eigen-selfstudy",
-    projectSlug: "linear-algebra",
-    kind: "self",
-    title: "고유값 단원 스스로 정리하기",
-    source: "직접 추가",
-    due: null,
-    status: "진행 중",
-    steps: 0,
-    summary:
-      "대각화 가능 조건을 설명할 수 있을 때까지. 외울 개념 2개가 이 항목에 묶여 있습니다.",
-    hasProofprint: false,
-  },
-  {
     id: "os-midterm",
-    projectSlug: "operating-system",
-    kind: "assignment",
+    workspaceSlug: "operating-system",
     title: "중간고사 대비 문제풀이",
     source: "사이버캠퍼스",
     due: "10월 20일",
@@ -489,38 +471,29 @@ export const workItems: WorkItem[] = [
     summary: "프로세스·스레드·동기화 범위.",
     hasProofprint: false,
   },
-  {
-    id: "os-sync-review",
-    projectSlug: "operating-system",
-    kind: "self",
-    title: "동기화 파트 복습",
-    source: "직접 추가",
-    due: null,
-    status: "진행 중",
-    steps: 0,
-    summary: "세마포어와 교착 상태 4조건을 근거까지 설명해 보기.",
-    hasProofprint: false,
-  },
 ];
 
-export function getWorkItems(projectSlug: string): WorkItem[] {
-  return workItems.filter((item) => item.projectSlug === projectSlug);
+export function getAssignments(workspaceSlug: string): Assignment[] {
+  return assignments.filter((item) => item.workspaceSlug === workspaceSlug);
 }
 
-export function getWorkItem(projectSlug: string, id: string): WorkItem | undefined {
-  return workItems.find(
-    (item) => item.projectSlug === projectSlug && item.id === id,
+export function getAssignment(
+  workspaceSlug: string,
+  id: string,
+): Assignment | undefined {
+  return assignments.find(
+    (item) => item.workspaceSlug === workspaceSlug && item.id === id,
   );
 }
 
-/** Proofprint 작업공간이 연결된 프로젝트. 사캠 과제와 1:1로 매칭된다. */
-export const proofprintProjectSlug = "adventure-design";
+/** Proofprint 기록이 연결된 워크스페이스. 사캠 과제와 1:1로 매칭된다. */
+export const proofprintWorkspaceSlug = "adventure-design";
 export const proofprintAssignmentSlug = "ai-service-proposal";
 export const proofprintItemId = "campus-service-design";
-export const proofprintBase = `/projects/${proofprintProjectSlug}/workspace/${proofprintItemId}`;
+export const proofprintBase = `/workspaces/${proofprintWorkspaceSlug}/assignments/${proofprintItemId}`;
 
-export function getProject(slug: string): Project | undefined {
-  return projects.find((project) => project.slug === slug);
+export function getWorkspace(slug: string): Workspace | undefined {
+  return workspaces.find((workspace) => workspace.slug === slug);
 }
 
 export function flattenTopics(topics: Topic[]): Topic[] {

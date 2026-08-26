@@ -28,28 +28,28 @@ DB만 제어할 때는 `npm run db:start`, `db:status`, `db:stop`. 마이그레�
 ## 화면 흐름
 
 ```
-/            → /projects (프로토타입은 항상 로그인된 상태로 시작)
-/projects    내 프로젝트
+/            → /workspaces (프로토타입은 항상 로그인된 상태로 시작)
+/workspaces  내 워크스페이스 (과목·주제 1개 = 워크스페이스 1개)
 /connect     사이버캠퍼스 SSO 연동
-/connect/importing   읽어온 과목·과제 확인 → 프로젝트 자동 생성
+/connect/importing   읽어온 과목·과제 확인 → 워크스페이스 자동 생성
 ```
 
-프로젝트 안에서는 사이드바로 자유롭게 이동한다.
+워크스페이스 하나가 과목 하나이고, 그 안에 학습과 과제가 함께 있다. 사이드바로 자유롭게 이동한다.
 
 | 경로 | 화면 |
 | --- | --- |
-| `/projects/[slug]` | 학습 현황 — 지금 상태, 이해도, 학습 흐름, 제출 이력 |
-| `/projects/[slug]/study` | 학습하기 — 에이전트 대화와 도구 호출 |
-| `/projects/[slug]/workspace` | 작업공간 — 과제(사캠)와 개인 학습 |
-| `/projects/[slug]/workspace/[itemId]` | 항목별 작업공간 (과제는 Proofprint 5단계) |
-| `/projects/[slug]/workspace/[itemId]/result` | 1페이지 결과·공개 범위·제출 |
-| `/projects/[slug]/syllabus` | 목차 · 이해도 |
-| `/projects/[slug]/notes` | 오답노트 — 몰랐던 개념 키워드 암기 카드 |
-| `/projects/[slug]/materials` | 학습 자료 |
+| `/workspaces/[slug]` | 학습 현황 — 지금 상태, 이해도, 학습 흐름, 제출 이력 |
+| `/workspaces/[slug]/study` | 학습하기 — 에이전트 대화와 도구 호출 |
+| `/workspaces/[slug]/assignments` | 과제 — 사이버캠퍼스에서 가져온 목록 |
+| `/workspaces/[slug]/assignments/[id]` | 과제 상세 (Proofprint 5단계) |
+| `/workspaces/[slug]/assignments/[id]/result` | 1페이지 결과·공개 범위·제출 |
+| `/workspaces/[slug]/syllabus` | 목차 · 이해도 |
+| `/workspaces/[slug]/notes` | 오답노트 — 몰랐던 개념 키워드 암기 카드 |
+| `/workspaces/[slug]/materials` | 학습 자료 |
 
 ## 데이터 현황
 
-- 프로젝트·목차·이해도·오답노트·작업공간 항목은 아직 `app/lib/study-data.ts`의 목 데이터다.
+- 워크스페이스·목차·이해도·오답노트·과제 목록은 아직 `app/lib/study-data.ts`의 목 데이터다.
 - Proofprint 5단계 작업공간·제출·이력만 PostgreSQL에 저장된다.
 
 ## 확인 명령

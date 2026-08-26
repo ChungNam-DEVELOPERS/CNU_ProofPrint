@@ -121,7 +121,7 @@ export function ProofprintResult({
   return (
     <>
       <nav className={styles.breadcrumbs} aria-label="현재 위치">
-        <Link href="/projects">프로젝트</Link>
+        <Link href="/workspaces">워크스페이스</Link>
         <span>/</span>
         <Link href={proofprintBase}>{assignment.title}</Link>
         <span>/</span>

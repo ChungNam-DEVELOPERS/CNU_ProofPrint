@@ -13,9 +13,9 @@ import { LevelChip, LevelMeter } from "../../components/level-chip";
 import { ProofprintHistory } from "../../components/proofprint-history";
 import {
   flattenTopics,
-  getProject,
+  getWorkspace,
   levelCounts,
-  proofprintProjectSlug,
+  proofprintWorkspaceSlug,
 } from "../../lib/study-data";
 import { getServerActor } from "../../server/auth";
 import { listProofprints } from "../../server/proofprint-repository";
@@ -30,28 +30,28 @@ export default async function ProjectOverviewPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const project = getProject(slug);
-  if (!project) notFound();
+  const workspace = getWorkspace(slug);
+  if (!workspace) notFound();
 
-  const counts = levelCounts(project.topics);
-  const allTopics = flattenTopics(project.topics);
-  const openNotes = project.notes.filter((note) => note.status !== "resolved");
+  const counts = levelCounts(workspace.topics);
+  const allTopics = flattenTopics(workspace.topics);
+  const openNotes = workspace.notes.filter((note) => note.status !== "resolved");
   const attention = allTopics.filter((topic) => topic.level === "shaky").slice(0, 4);
-  const hours = Math.floor(project.studyMinutes / 60);
-  const minutes = project.studyMinutes % 60;
+  const hours = Math.floor(workspace.studyMinutes / 60);
+  const minutes = workspace.studyMinutes % 60;
 
-  const showSubmissions = slug === proofprintProjectSlug;
+  const showSubmissions = slug === proofprintWorkspaceSlug;
   const submissions = showSubmissions
     ? await listProofprints(await getServerActor())
     : [];
 
   return (
-    <AppShell projectSlug={slug} active="overview">
+    <AppShell workspaceSlug={slug} active="overview">
       <div className={styles.pageHead}>
         <div>
           <h1 className={styles.pageTitle}>학습 현황</h1>
           <p className={styles.pageDesc}>
-            {project.title} · {project.term} — 지금 상태와 지금까지의 학습 기록을 함께
+            {workspace.title} · {workspace.term} — 지금 상태와 지금까지의 학습 기록을 함께
             봅니다.
           </p>
         </div>
@@ -60,7 +60,7 @@ export default async function ProjectOverviewPage({
             <DownloadSimple size={16} weight="bold" aria-hidden="true" /> 기록 내보내기
           </button>
           <Link
-            href={`/projects/${slug}/study`}
+            href={`/workspaces/${slug}/study`}
             className={`${styles.btn} ${styles.btnPrimary}`}
           >
             <ChatCircleDots size={16} weight="bold" aria-hidden="true" /> 이어서 학습하기
@@ -73,14 +73,14 @@ export default async function ProjectOverviewPage({
           <section className={styles.statusCard}>
             <p className={styles.statusTop}>
               <span className={styles.liveDot} aria-hidden="true" />
-              지금 이렇게 공부하고 있습니다 · {project.updatedAt} 갱신
+              지금 이렇게 공부하고 있습니다 · {workspace.updatedAt} 갱신
             </p>
-            <p className={styles.statusText}>{project.summary}</p>
+            <p className={styles.statusText}>{workspace.summary}</p>
             <div className={styles.nextAction}>
               <Target size={19} weight="bold" aria-hidden="true" />
               <span>
                 <strong>다음에 해볼 것</strong>
-                {project.nextAction}
+                {workspace.nextAction}
               </span>
             </div>
           </section>
@@ -91,7 +91,7 @@ export default async function ProjectOverviewPage({
               <strong>
                 {hours}시간 {minutes}분
               </strong>
-              <span>이 프로젝트에서</span>
+              <span>이 워크스페이스에서</span>
             </div>
             <div className={styles.statBox}>
               <em>설명 가능한 주제</em>
@@ -111,7 +111,7 @@ export default async function ProjectOverviewPage({
           <section className={styles.card}>
             <div className={styles.cardHead}>
               <h2 className={styles.cardTitle}>목차별 이해도</h2>
-              <Link href={`/projects/${slug}/syllabus`} className={styles.cardLink}>
+              <Link href={`/workspaces/${slug}/syllabus`} className={styles.cardLink}>
                 전체 목차 보기 <ArrowRight size={12} weight="bold" aria-hidden="true" />
               </Link>
             </div>
@@ -148,7 +148,7 @@ export default async function ProjectOverviewPage({
               <span className={styles.muted}>에이전트가 남긴 기록</span>
             </div>
             <div className={styles.timelineList}>
-              {project.activity.map((item) => (
+              {workspace.activity.map((item) => (
                 <div key={item.id} className={styles.timelineRow}>
                   <span className={styles.timelineWhen}>{item.at}</span>
                   <span style={{ fontSize: 13.5, lineHeight: 1.7 }}>{item.message}</span>
@@ -166,7 +166,7 @@ export default async function ProjectOverviewPage({
                 에이전트가 한 일
               </h2>
             </div>
-            <ActivityFeed items={project.activity} />
+            <ActivityFeed items={workspace.activity} />
           </section>
 
           <section className={styles.card}>
@@ -175,7 +175,7 @@ export default async function ProjectOverviewPage({
                 <NotePencil size={17} weight="bold" aria-hidden="true" />
                 외울 개념
               </h2>
-              <Link href={`/projects/${slug}/notes`} className={styles.cardLink}>
+              <Link href={`/workspaces/${slug}/notes`} className={styles.cardLink}>
                 전체 보기
               </Link>
             </div>

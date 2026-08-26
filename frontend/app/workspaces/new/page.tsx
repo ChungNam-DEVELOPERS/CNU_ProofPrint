@@ -4,18 +4,18 @@ import Link from "next/link";
 import { AppShell } from "../../components/app-shell";
 import styles from "../../study.module.css";
 
-export const metadata = { title: "새 프로젝트 | CNU Proofprint" };
+export const metadata = { title: "새 워크스페이스 | Proofprint" };
 
 export default function NewProjectPage() {
   return (
-    <AppShell projectSlug="" active="none">
+    <AppShell workspaceSlug="" active="none">
       <div className={styles.pageHead}>
         <div>
-          <Link href="/projects" className={styles.cardLink}>
-            <ArrowLeft size={13} weight="bold" aria-hidden="true" /> 프로젝트 목록
+          <Link href="/workspaces" className={styles.cardLink}>
+            <ArrowLeft size={13} weight="bold" aria-hidden="true" /> 워크스페이스 목록
           </Link>
           <h1 className={styles.pageTitle} style={{ marginTop: 8 }}>
-            새 프로젝트 만들기
+            새 워크스페이스 만들기
           </h1>
           <p className={styles.pageDesc}>
             무엇을 공부하는지만 알려주면 에이전트가 목차 초안을 만들고, 학습하는 동안
@@ -26,7 +26,7 @@ export default function NewProjectPage() {
 
       <div className={styles.formCard}>
         <div className={styles.field}>
-          <label htmlFor="title">프로젝트 이름</label>
+          <label htmlFor="title">워크스페이스 이름</label>
           <input id="title" placeholder="예: 선형대수학, 정보처리기사 필기, 논문 읽기" />
         </div>
 
@@ -35,7 +35,7 @@ export default function NewProjectPage() {
           <select id="kind" defaultValue="course">
             <option value="course">수업 과목</option>
             <option value="exam">시험 대비</option>
-            <option value="assignment">과제 · 프로젝트</option>
+            <option value="assignment">과제 · 팀 작업</option>
             <option value="self">개인 학습</option>
           </select>
         </div>
@@ -56,7 +56,7 @@ export default function NewProjectPage() {
         </div>
 
         <button type="button" className={`${styles.btn} ${styles.btnPrimary} ${styles.blockBtn}`}>
-          <Plus size={16} weight="bold" aria-hidden="true" /> 프로젝트 만들기
+          <Plus size={16} weight="bold" aria-hidden="true" /> 워크스페이스 만들기
         </button>
       </div>
     </AppShell>

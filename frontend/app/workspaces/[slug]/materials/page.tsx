@@ -5,7 +5,7 @@ import { NotePencil } from "@phosphor-icons/react/dist/ssr/NotePencil";
 import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
 import { AppShell } from "../../../components/app-shell";
-import { getProject, type Material } from "../../../lib/study-data";
+import { getWorkspace, type Material } from "../../../lib/study-data";
 import styles from "../../../study.module.css";
 
 const kindIcon: Record<Material["kind"], ReactNode> = {
@@ -20,11 +20,11 @@ export default async function MaterialsPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const project = getProject(slug);
-  if (!project) notFound();
+  const workspace = getWorkspace(slug);
+  if (!workspace) notFound();
 
   return (
-    <AppShell projectSlug={slug} active="materials">
+    <AppShell workspaceSlug={slug} active="materials">
       <div className={styles.pageHead}>
         <div>
           <h1 className={styles.pageTitle}>학습 자료</h1>
@@ -42,11 +42,11 @@ export default async function MaterialsPage({
 
       <section className={styles.card}>
         <div className={styles.cardHead}>
-          <h2 className={styles.cardTitle}>올린 자료 {project.materials.length}개</h2>
+          <h2 className={styles.cardTitle}>올린 자료 {workspace.materials.length}개</h2>
           <span className={styles.muted}>사용 횟수는 에이전트가 실제로 참고한 횟수입니다</span>
         </div>
 
-        {project.materials.map((material) => (
+        {workspace.materials.map((material) => (
           <div key={material.id} className={styles.matRow}>
             <span className={styles.matIcon} aria-hidden="true">
               {kindIcon[material.kind]}

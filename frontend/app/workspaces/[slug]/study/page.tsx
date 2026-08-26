@@ -8,7 +8,7 @@ import { User } from "@phosphor-icons/react/dist/ssr/User";
 import { notFound } from "next/navigation";
 import { AppShell } from "../../../components/app-shell";
 import { LevelChip } from "../../../components/level-chip";
-import { flattenTopics, getProject } from "../../../lib/study-data";
+import { flattenTopics, getWorkspace } from "../../../lib/study-data";
 import styles from "../../../study.module.css";
 
 type Message = {
@@ -69,16 +69,16 @@ export default async function StudyPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const project = getProject(slug);
-  if (!project) notFound();
+  const workspace = getWorkspace(slug);
+  if (!workspace) notFound();
 
-  const focus = flattenTopics(project.topics).filter(
+  const focus = flattenTopics(workspace.topics).filter(
     (topic) => topic.level === "shaky",
   );
-  const openNotes = project.notes.filter((note) => note.status !== "resolved");
+  const openNotes = workspace.notes.filter((note) => note.status !== "resolved");
 
   return (
-    <AppShell projectSlug={slug} active="study">
+    <AppShell workspaceSlug={slug} active="study">
       <div className={styles.pageHead}>
         <div>
           <h1 className={styles.pageTitle}>학습하기</h1>

@@ -4,7 +4,7 @@ import { PencilSimpleLine } from "@phosphor-icons/react/dist/ssr/PencilSimpleLin
 import { Sparkle } from "@phosphor-icons/react/dist/ssr/Sparkle";
 import Link from "next/link";
 import { OnboardSteps } from "../../components/onboard-steps";
-import { cyberCampus, importedAssignments, projects } from "../../lib/study-data";
+import { cyberCampus, importedAssignments, workspaces } from "../../lib/study-data";
 import styles from "../../study.module.css";
 
 export const metadata = { title: "가져오는 중 | Proofprint" };
@@ -22,7 +22,7 @@ export default function ImportingPage() {
           </p>
           <h1 className={styles.authTitle}>사이버캠퍼스를 읽었습니다</h1>
           <p className={styles.authDesc}>
-            {cyberCampus.term} 수강 정보를 가져와 프로젝트를 만들어 뒀습니다.
+            {cyberCampus.term} 수강 정보를 가져와 워크스페이스를 만들어 뒀습니다.
           </p>
 
           <OnboardSteps current={1} />
@@ -46,17 +46,17 @@ export default function ImportingPage() {
             <div className={styles.cardHead}>
               <h2 className={styles.cardTitle}>
                 <Sparkle size={16} weight="fill" aria-hidden="true" />
-                자동으로 만들어진 프로젝트
+                자동으로 만들어진 워크스페이스
               </h2>
             </div>
-            {projects.map((project) => (
-              <div key={project.slug} className={styles.importRow}>
+            {workspaces.map((workspace) => (
+              <div key={workspace.slug} className={styles.importRow}>
                 <span className={styles.projEmoji} style={{ width: 34, height: 34, flex: "0 0 34px", fontSize: 17 }}>
-                  {project.emoji}
+                  {workspace.emoji}
                 </span>
                 <span className={styles.importRowMain}>
-                  <strong>{project.title}</strong>
-                  <em>{project.subject}</em>
+                  <strong>{workspace.title}</strong>
+                  <em>{workspace.subject}</em>
                 </span>
                 <CheckCircle size={19} weight="fill" color="#10b981" aria-hidden="true" />
               </div>
@@ -89,7 +89,7 @@ export default function ImportingPage() {
           </div>
 
           <Link
-            href="/projects"
+            href="/workspaces"
             className={`${styles.btn} ${styles.btnPrimary} ${styles.blockBtn}`}
           >
             학습 시작하기

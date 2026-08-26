@@ -10,14 +10,14 @@ import { SquaresFour } from "@phosphor-icons/react/dist/ssr/SquaresFour";
 import { TreeStructure } from "@phosphor-icons/react/dist/ssr/TreeStructure";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { cyberCampus, getWorkItems, projects, user } from "../lib/study-data";
+import { cyberCampus, getAssignments, user, workspaces } from "../lib/study-data";
 import styles from "../study.module.css";
-import { ProjectSwitcher } from "./project-switcher";
+import { WorkspaceSwitcher } from "./workspace-switcher";
 
 export type ShellMenu =
   | "overview"
   | "study"
-  | "workspace"
+  | "assignments"
   | "syllabus"
   | "notes"
   | "materials"
@@ -33,18 +33,18 @@ type NavItem = {
 };
 
 export function AppShell({
-  projectSlug,
+  workspaceSlug,
   active,
   children,
 }: {
-  projectSlug: string;
+  workspaceSlug: string;
   active: ShellMenu;
   children: ReactNode;
 }) {
-  const project = projects.find((item) => item.slug === projectSlug);
-  const base = `/projects/${projectSlug}`;
-  const openNotes = project?.notes.filter((note) => note.status !== "resolved").length ?? 0;
-  const openWork = getWorkItems(projectSlug).filter(
+  const workspace = workspaces.find((item) => item.slug === workspaceSlug);
+  const base = `/workspaces/${workspaceSlug}`;
+  const openNotes = workspace?.notes.filter((note) => note.status !== "resolved").length ?? 0;
+  const openWork = getAssignments(workspaceSlug).filter(
     (item) => item.status !== "제출 완료",
   ).length;
 
@@ -64,10 +64,10 @@ export function AppShell({
       icon: <ChatCircleDots size={19} weight="bold" />,
     },
     {
-      key: "workspace",
-      label: "작업공간",
-      hint: "과제 · 개인 학습",
-      href: `${base}/workspace`,
+      key: "assignments",
+      label: "과제",
+      hint: "사이버캠퍼스 과제",
+      href: `${base}/assignments`,
       icon: <SquaresFour size={19} weight="bold" />,
       badge: openWork,
     },
@@ -99,7 +99,7 @@ export function AppShell({
     <div className={styles.shell}>
       <header className={styles.topbar}>
         <div className={styles.topbarLeft}>
-          <Link href="/projects" className={styles.brand}>
+          <Link href="/workspaces" className={styles.brand}>
             <span className={styles.brandMark} aria-hidden="true">
               <PencilSimpleLine size={20} weight="bold" />
             </span>
@@ -108,7 +108,7 @@ export function AppShell({
             </span>
           </Link>
           <span className={styles.topbarDivider} aria-hidden="true" />
-          <ProjectSwitcher projects={projects} currentSlug={projectSlug} />
+          <WorkspaceSwitcher workspaces={workspaces} currentSlug={workspaceSlug} />
         </div>
 
         <div className={styles.topbarRight}>
@@ -116,8 +116,8 @@ export function AppShell({
             <CheckCircle size={14} weight="fill" aria-hidden="true" />
             사이버캠퍼스 연동됨 · {cyberCampus.lastSyncedAt}
           </span>
-          <Link href="/projects" className={styles.topbarLink}>
-            <Books size={18} weight="bold" aria-hidden="true" /> 전체 프로젝트
+          <Link href="/workspaces" className={styles.topbarLink}>
+            <Books size={18} weight="bold" aria-hidden="true" /> 전체 워크스페이스
           </Link>
           <button type="button" className={styles.iconBtn} aria-label="알림 5개">
             <EnvelopeSimple size={20} weight="regular" aria-hidden="true" />
@@ -137,8 +137,8 @@ export function AppShell({
       </header>
 
       <div className={styles.body}>
-        <aside className={styles.sidenav} aria-label="프로젝트 메뉴">
-          <nav className={styles.navList} aria-label="프로젝트 메뉴">
+        <aside className={styles.sidenav} aria-label="워크스페이스 메뉴">
+          <nav className={styles.navList} aria-label="워크스페이스 메뉴">
             {navItems.map((item) => (
               <Link
                 key={item.key}
@@ -162,10 +162,10 @@ export function AppShell({
             ))}
           </nav>
 
-          {project ? (
+          {workspace ? (
             <div className={styles.navFooter}>
               <p>마지막 갱신</p>
-              <strong>{project.updatedAt}</strong>
+              <strong>{workspace.updatedAt}</strong>
               <span>
                 사이버캠퍼스에서 가져온 과제와 자료를 바탕으로 에이전트가 학습 중에
                 자동으로 기록합니다.

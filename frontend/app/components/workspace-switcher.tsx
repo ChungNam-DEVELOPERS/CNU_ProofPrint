@@ -5,19 +5,19 @@ import { Check } from "@phosphor-icons/react/dist/ssr/Check";
 import { Plus } from "@phosphor-icons/react/dist/ssr/Plus";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import type { Project } from "../lib/study-data";
+import type { Workspace } from "../lib/study-data";
 import styles from "../study.module.css";
 
-export function ProjectSwitcher({
-  projects,
+export function WorkspaceSwitcher({
+  workspaces,
   currentSlug,
 }: {
-  projects: Project[];
+  workspaces: Workspace[];
   currentSlug: string;
 }) {
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const current = projects.find((project) => project.slug === currentSlug);
+  const current = workspaces.find((item) => item.slug === currentSlug);
 
   useEffect(() => {
     if (!open) return;
@@ -51,45 +51,45 @@ export function ProjectSwitcher({
         </span>
         <span className={styles.switcherLabel}>
           <em>{current?.term ?? "전체"}</em>
-          <strong>{current?.title ?? "프로젝트 선택"}</strong>
+          <strong>{current?.title ?? "워크스페이스 선택"}</strong>
         </span>
         <CaretDown size={16} weight="bold" aria-hidden="true" />
       </button>
 
       {open ? (
         <div className={styles.switcherMenu} role="menu">
-          <p className={styles.switcherMenuHeading}>내 프로젝트</p>
-          {projects.map((project) => (
+          <p className={styles.switcherMenuHeading}>내 워크스페이스</p>
+          {workspaces.map((workspace) => (
             <Link
-              key={project.slug}
-              href={`/projects/${project.slug}`}
+              key={workspace.slug}
+              href={`/workspaces/${workspace.slug}`}
               role="menuitem"
               className={
-                project.slug === currentSlug
+                workspace.slug === currentSlug
                   ? `${styles.switcherItem} ${styles.switcherItemActive}`
                   : styles.switcherItem
               }
               onClick={() => setOpen(false)}
             >
-              <span aria-hidden="true">{project.emoji}</span>
+              <span aria-hidden="true">{workspace.emoji}</span>
               <span className={styles.switcherItemText}>
-                <strong>{project.title}</strong>
+                <strong>{workspace.title}</strong>
                 <em>
-                  {project.status} · {project.updatedAt} 갱신
+                  {workspace.status} · {workspace.updatedAt} 갱신
                 </em>
               </span>
-              {project.slug === currentSlug ? (
+              {workspace.slug === currentSlug ? (
                 <Check size={16} weight="bold" aria-hidden="true" />
               ) : null}
             </Link>
           ))}
           <Link
-            href="/projects/new"
+            href="/workspaces/new"
             role="menuitem"
             className={styles.switcherNew}
             onClick={() => setOpen(false)}
           >
-            <Plus size={16} weight="bold" aria-hidden="true" /> 새 프로젝트 만들기
+            <Plus size={16} weight="bold" aria-hidden="true" /> 새 워크스페이스 만들기
           </Link>
         </div>
       ) : null}

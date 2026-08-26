@@ -90,7 +90,7 @@ export default function ConnectPage() {
           </p>
 
           <p className={styles.authFoot}>
-            <Link href="/projects">나중에 하고 먼저 둘러보기</Link>
+            <Link href="/workspaces">나중에 하고 먼저 둘러보기</Link>
           </p>
         </div>
       </div>

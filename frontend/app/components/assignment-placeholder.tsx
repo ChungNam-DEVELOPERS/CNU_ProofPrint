@@ -2,21 +2,21 @@ import { ArrowLeft } from "@phosphor-icons/react/dist/ssr/ArrowLeft";
 import { ChatCircleDots } from "@phosphor-icons/react/dist/ssr/ChatCircleDots";
 import { Hammer } from "@phosphor-icons/react/dist/ssr/Hammer";
 import Link from "next/link";
-import type { WorkItem } from "../lib/study-data";
+import type { Assignment } from "../lib/study-data";
 import styles from "../study.module.css";
 
-export function WorkItemPlaceholder({
+export function AssignmentPlaceholder({
   item,
-  projectSlug,
+  workspaceSlug,
 }: {
-  item: WorkItem;
-  projectSlug: string;
+  item: Assignment;
+  workspaceSlug: string;
 }) {
   return (
     <>
       <div className={styles.pageHead}>
         <div>
-          <Link href={`/projects/${projectSlug}/workspace`} className={styles.cardLink}>
+          <Link href={`/workspaces/${workspaceSlug}/assignments`} className={styles.cardLink}>
             <ArrowLeft size={13} weight="bold" aria-hidden="true" /> 작업공간
           </Link>
           <h1 className={styles.pageTitle} style={{ marginTop: 8 }}>
@@ -26,7 +26,7 @@ export function WorkItemPlaceholder({
         </div>
         <div className={styles.headActions}>
           <Link
-            href={`/projects/${projectSlug}/study`}
+            href={`/workspaces/${workspaceSlug}/study`}
             className={`${styles.btn} ${styles.btnPrimary}`}
           >
             <ChatCircleDots size={16} weight="bold" aria-hidden="true" /> 에이전트와 시작하기

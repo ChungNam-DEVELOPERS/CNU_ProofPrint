@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AppShell } from "../../../components/app-shell";
 import { NoteDeck } from "../../../components/note-deck";
-import { getProject } from "../../../lib/study-data";
+import { getWorkspace } from "../../../lib/study-data";
 import styles from "../../../study.module.css";
 
 const filters = [
@@ -21,15 +21,15 @@ export default async function NotesPage({
 }) {
   const { slug } = await params;
   const { filter = "open" } = await searchParams;
-  const project = getProject(slug);
-  if (!project) notFound();
+  const workspace = getWorkspace(slug);
+  if (!workspace) notFound();
 
-  const notes = [...project.notes]
+  const notes = [...workspace.notes]
     .filter((note) => (filter === "all" ? true : note.status === filter))
     .sort((a, b) => b.occurrences - a.occurrences);
 
   return (
-    <AppShell projectSlug={slug} active="notes">
+    <AppShell workspaceSlug={slug} active="notes">
       <div className={styles.pageHead}>
         <div>
           <h1 className={styles.pageTitle}>오답노트</h1>
@@ -44,15 +44,15 @@ export default async function NotesPage({
         {filters.map((item) => (
           <Link
             key={item.key}
-            href={`/projects/${slug}/notes?filter=${item.key}`}
+            href={`/workspaces/${slug}/notes?filter=${item.key}`}
             className={
               filter === item.key ? `${styles.chip} ${styles.chipActive}` : styles.chip
             }
           >
             {item.label}{" "}
             {item.key === "all"
-              ? project.notes.length
-              : project.notes.filter((note) => note.status === item.key).length}
+              ? workspace.notes.length
+              : workspace.notes.filter((note) => note.status === item.key).length}
           </Link>
         ))}
       </div>

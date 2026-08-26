@@ -2,7 +2,7 @@ import { ArrowsClockwise } from "@phosphor-icons/react/dist/ssr/ArrowsClockwise"
 import { notFound } from "next/navigation";
 import { AppShell } from "../../../components/app-shell";
 import { LevelChip, LevelMeter } from "../../../components/level-chip";
-import { getProject, levelCounts } from "../../../lib/study-data";
+import { getWorkspace, levelCounts } from "../../../lib/study-data";
 import styles from "../../../study.module.css";
 
 export default async function SyllabusPage({
@@ -11,11 +11,11 @@ export default async function SyllabusPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const project = getProject(slug);
-  if (!project) notFound();
+  const workspace = getWorkspace(slug);
+  if (!workspace) notFound();
 
   return (
-    <AppShell projectSlug={slug} active="syllabus">
+    <AppShell workspaceSlug={slug} active="syllabus">
       <div className={styles.pageHead}>
         <div>
           <h1 className={styles.pageTitle}>목차 · 이해도</h1>
@@ -32,11 +32,11 @@ export default async function SyllabusPage({
       </div>
 
       <section className={styles.card} style={{ marginBottom: 18 }}>
-        <LevelMeter counts={levelCounts(project.topics)} />
+        <LevelMeter counts={levelCounts(workspace.topics)} />
       </section>
 
       <div className={styles.tree}>
-        {project.topics.map((topic) => (
+        {workspace.topics.map((topic) => (
           <section key={topic.id} className={styles.treeNode}>
             <header className={styles.treeHead}>
               <h3>{topic.title}</h3>
