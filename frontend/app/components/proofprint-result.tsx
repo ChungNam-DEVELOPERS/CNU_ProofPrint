@@ -19,6 +19,7 @@ import type {
   ProofprintSubmission,
   WorkspaceResource,
 } from "../lib/proofprint-api";
+import { proofprintBase } from "../lib/study-data";
 import styles from "../proofprint.module.css";
 
 type SubmitState = "idle" | "submitting" | "submitted" | "error";
@@ -120,16 +121,16 @@ export function ProofprintResult({
   return (
     <>
       <nav className={styles.breadcrumbs} aria-label="현재 위치">
-        <Link href="/">과제</Link>
+        <Link href="/projects">프로젝트</Link>
         <span>/</span>
-        <Link href={`/assignments/${assignment.slug}`}>{assignment.title}</Link>
+        <Link href={proofprintBase}>{assignment.title}</Link>
         <span>/</span>
         <span aria-current="page">Proofprint 결과</span>
       </nav>
 
       <div className={styles.resultHeader}>
         <div>
-          <Link className={styles.backLink} href={`/assignments/${assignment.slug}/proofprint`}>
+          <Link className={styles.backLink} href={`${proofprintBase}/workspace`}>
             <ArrowLeft size={16} weight="bold" aria-hidden="true" /> 작성 화면으로
           </Link>
           <h1>AI 학습과정 Proofprint</h1>
@@ -140,7 +141,7 @@ export function ProofprintResult({
             <DownloadSimple size={18} weight="bold" aria-hidden="true" /> PDF 저장
           </button>
           {isSubmitted ? (
-            <Link className={styles.successButton} href="/proofprints">
+            <Link className={styles.successButton} href={`${proofprintBase}/history`}>
               <CheckCircle size={19} weight="fill" aria-hidden="true" /> 제출 기록 보기
             </Link>
           ) : (

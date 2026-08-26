@@ -23,6 +23,7 @@ import type {
   WorkspaceResource,
 } from "../lib/proofprint-api";
 import { proofprintSteps } from "../lib/proofprint-data";
+import { proofprintBase } from "../lib/study-data";
 import styles from "../proofprint.module.css";
 
 type SaveState = "idle" | "saving" | "saved" | "error";
@@ -210,7 +211,7 @@ export function ProofprintWorkspace({
       setActiveStep(nextStep);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
-      router.push(`/assignments/${assignment.slug}/proofprint/result`);
+      router.push(`${proofprintBase}/workspace/result`);
     }
   };
 
@@ -513,7 +514,7 @@ export function ProofprintWorkspace({
                 )}
               </button>
             </div>
-            <Link className={styles.deferLink} href={`/assignments/${assignment.slug}`}>
+            <Link className={styles.deferLink} href={proofprintBase}>
               나중에 이어서 작성
             </Link>
           </aside>

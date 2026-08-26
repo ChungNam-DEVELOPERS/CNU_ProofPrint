@@ -1,151 +1,113 @@
 import { ArrowRight } from "@phosphor-icons/react/dist/ssr/ArrowRight";
-import { CalendarBlank } from "@phosphor-icons/react/dist/ssr/CalendarBlank";
-import { CheckCircle } from "@phosphor-icons/react/dist/ssr/CheckCircle";
-import { Clock } from "@phosphor-icons/react/dist/ssr/Clock";
-import { FileText } from "@phosphor-icons/react/dist/ssr/FileText";
-import { FunnelSimple } from "@phosphor-icons/react/dist/ssr/FunnelSimple";
-import { Sparkle } from "@phosphor-icons/react/dist/ssr/Sparkle";
+import { LinkSimple } from "@phosphor-icons/react/dist/ssr/LinkSimple";
+import { NotePencil } from "@phosphor-icons/react/dist/ssr/NotePencil";
+import { PencilSimpleLine } from "@phosphor-icons/react/dist/ssr/PencilSimpleLine";
+import { Receipt } from "@phosphor-icons/react/dist/ssr/Receipt";
+import { TreeStructure } from "@phosphor-icons/react/dist/ssr/TreeStructure";
 import Link from "next/link";
-import { CnuCourseShell } from "./components/cnu-course-shell";
-import { assignment as assignmentCopy } from "./lib/proofprint-data";
-import { getServerActor } from "./server/auth";
-import { getWorkspaceByAssignmentSlug } from "./server/proofprint-repository";
-import styles from "./proofprint.module.css";
+import styles from "./study.module.css";
 
-export const dynamic = "force-dynamic";
-export const runtime = "nodejs";
+const features = [
+  {
+    icon: <LinkSimple size={19} weight="bold" />,
+    title: "사이버캠퍼스 연동",
+    body: "과목, 과제, 강의자료를 자동으로 가져옵니다.",
+  },
+  {
+    icon: <TreeStructure size={19} weight="bold" />,
+    title: "목차별 이해도",
+    body: "설명을 들은 것과 설명할 수 있는 것을 구분합니다.",
+  },
+  {
+    icon: <NotePencil size={19} weight="bold" />,
+    title: "오답노트 자동 정리",
+    body: "몰랐던 개념과 공식만 따로 모아 반복을 잡습니다.",
+  },
+  {
+    icon: <Receipt size={19} weight="bold" />,
+    title: "1페이지 학습 기록",
+    body: "무엇을 어떻게 공부했는지 한 장으로 남습니다.",
+  },
+];
 
-export default async function Home() {
-  const actor = await getServerActor();
-  const workspace = await getWorkspaceByAssignmentSlug(actor, "ai-service-proposal");
-  const completedSteps = workspace.status === "submitted" ? 5 : workspace.currentStep;
-  const progress = completedSteps * 20;
-  const mainSubmitted = workspace.status === "submitted";
-  const assignments = [
-    {
-      title: workspace.assignment.title,
-      due: assignmentCopy.dueAt,
-      meta: `${assignmentCopy.category} · ${workspace.assignment.score ?? 0}점`,
-      status: mainSubmitted ? "제출 완료" : "작성 중",
-      proofprint: mainSubmitted ? "제출 완료" : `${completedSteps}/5 단계`,
-      tone: mainSubmitted ? "done" : "progress",
-      href: `/assignments/${workspace.assignment.slug}`,
-    },
-    {
-      title: "서비스 사용자 시나리오 작성",
-      due: "2026.09.25 (금) 23:59",
-      meta: "개인 과제 · 15점",
-      status: "시작 전",
-      proofprint: "선택 사용",
-      tone: "ready",
-      href: "#assignment-analysis",
-    },
-    {
-      title: "사용자 인터뷰 분석 보고서",
-      due: "2026.09.11 (금) 18:00",
-      meta: "팀 과제 · 10점",
-      status: "제출 완료",
-      proofprint: "제출 완료",
-      tone: "done",
-      href: "/proofprints",
-    },
-  ];
-  const submittedCount = assignments.filter((item) => item.status === "제출 완료").length;
+export default function LandingPage() {
   return (
-    <CnuCourseShell activeMenu="과제">
-      <div className={styles.pageHeadingRow}>
-        <div>
-          <p className={styles.eyebrow}>학습요소</p>
-          <h1>과제</h1>
-          <p className={styles.pageDescription}>
-            제출할 과제와 AI 학습과정 기록 상태를 함께 확인하세요.
-          </p>
-        </div>
-        <Link className={styles.outlineButton} href="/proofprints">
-          <FileText size={18} weight="bold" aria-hidden="true" /> 내 Proofprint
+    <div className={styles.shell}>
+      <nav className={styles.landingNav}>
+        <Link href="/" className={styles.brand}>
+          <span className={styles.brandMark} aria-hidden="true">
+            <PencilSimpleLine size={20} weight="bold" />
+          </span>
+          <span>
+            <strong>Proofprint</strong>
+          </span>
         </Link>
-      </div>
-
-      <section className={styles.overviewBanner} aria-labelledby="proofprint-overview-title">
-        <div className={styles.bannerIcon} aria-hidden="true">
-          <Sparkle size={28} weight="fill" />
-        </div>
-        <div className={styles.bannerCopy}>
-          <span className={styles.bannerLabel}>이번 주 AI 학습과정</span>
-          <h2 id="proofprint-overview-title">
-            {mainSubmitted
-              ? "캠퍼스 서비스 설계 과제의 Proofprint 제출이 완료되었습니다"
-              : "캠퍼스 서비스 설계 과제의 Proofprint를 이어서 작성하세요"}
-          </h2>
-          <p>
-            5단계 중 {completedSteps}단계를 기록했습니다. 평균 체크포인트 작성 시간은 약 2분입니다.
-          </p>
-        </div>
-        <div className={styles.bannerProgress}>
-          <div>
-            <strong>{progress}%</strong>
-            <span>{completedSteps} / 5 단계</span>
-          </div>
-          <div className={styles.progressTrack} aria-label={`Proofprint 작성률 ${progress}%`}>
-            <span style={{ width: `${progress}%` }} />
-          </div>
-        </div>
-        <Link
-          className={styles.bannerAction}
-          href={mainSubmitted
-            ? "/assignments/ai-service-proposal/proofprint/result"
-            : "/assignments/ai-service-proposal/proofprint"}
-        >
-          {mainSubmitted ? "제출본 보기" : "이어서 작성"} <ArrowRight size={18} weight="bold" aria-hidden="true" />
-        </Link>
-      </section>
-
-      <div className={styles.filterBar}>
-        <div className={styles.tabList} aria-label="과제 상태 필터">
-          <button className={styles.activeTab} type="button">
-            전체 <span>3</span>
-          </button>
-          <button type="button">제출 전 {assignments.length - submittedCount}</button>
-          <button type="button">제출 완료 {submittedCount}</button>
-        </div>
-        <button className={styles.filterButton} type="button">
-          <FunnelSimple size={17} weight="bold" aria-hidden="true" /> 마감일순
-        </button>
-      </div>
-
-      <section className={styles.assignmentList} aria-label="과제 목록">
-        {assignments.map((item) => (
-          <Link className={styles.assignmentCard} href={item.href} key={item.title}>
-            <div className={`${styles.assignmentMarker} ${styles[item.tone]}`} aria-hidden="true" />
-            <div className={styles.assignmentMain}>
-              <div className={styles.assignmentTitleLine}>
-                <h2>{item.title}</h2>
-                {item.proofprint !== "선택 사용" && (
-                  <span className={styles.proofprintBadge}>
-                    <Sparkle size={13} weight="fill" aria-hidden="true" /> Proofprint
-                  </span>
-                )}
-              </div>
-              <p>{item.meta}</p>
-              <div className={styles.assignmentMeta}>
-                <span>
-                  <CalendarBlank size={16} weight="bold" aria-hidden="true" /> 마감 {item.due}
-                </span>
-                <span>
-                  {item.tone === "done" ? (
-                    <CheckCircle size={16} weight="fill" aria-hidden="true" />
-                  ) : (
-                    <Clock size={16} weight="bold" aria-hidden="true" />
-                  )}
-                  {item.proofprint}
-                </span>
-              </div>
-            </div>
-            <span className={`${styles.statusPill} ${styles[item.tone]}`}>{item.status}</span>
-            <ArrowRight className={styles.cardArrow} size={20} weight="bold" aria-hidden="true" />
+        <div className={styles.landingNavLinks}>
+          <Link href="/login" className={styles.topbarLink}>
+            로그인
           </Link>
-        ))}
+          <Link href="/signup" className={`${styles.btn} ${styles.btnPrimary}`}>
+            시작하기
+          </Link>
+        </div>
+      </nav>
+
+      <section className={styles.hero}>
+        <div>
+          <h1 className={styles.heroTitle}>
+            사이버캠퍼스는
+            <br />
+            과제만 알려줍니다.
+            <br />
+            <span>무엇을 아는지는</span> 여기서.
+          </h1>
+          <p className={styles.heroLead}>
+            학번으로 한 번만 연동하면 이번 학기 과목과 과제를 그대로 읽어옵니다. 그
+            위에서 학습 에이전트가 함께 공부하면서, 목차별 이해도와 몰랐던 개념을
+            스스로 정리해 둡니다.
+          </p>
+          <div className={styles.heroActions}>
+            <Link href="/signup" className={`${styles.btn} ${styles.btnPrimary}`}>
+              사이버캠퍼스 연동하고 시작하기
+              <ArrowRight size={16} weight="bold" aria-hidden="true" />
+            </Link>
+            <Link href="/projects" className={styles.btn}>
+              둘러보기
+            </Link>
+          </div>
+        </div>
+
+        <div className={styles.heroArt} aria-hidden="true">
+          <div className={styles.artCard}>
+            <h3>선형대수학 · 학습 현황</h3>
+            {[
+              { icon: <TreeStructure size={17} weight="bold" />, width: "82%" },
+              { icon: <NotePencil size={17} weight="bold" />, width: "64%" },
+              { icon: <Receipt size={17} weight="bold" />, width: "73%" },
+              { icon: <LinkSimple size={17} weight="bold" />, width: "48%" },
+            ].map((row, index) => (
+              <div key={index} className={styles.artRow}>
+                <span className={styles.artIcon}>{row.icon}</span>
+                <span className={styles.artBar} style={{ maxWidth: row.width }} />
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
-    </CnuCourseShell>
+
+      <div className={styles.featureStrip}>
+        {features.map((feature) => (
+          <div key={feature.title} className={styles.featureItem}>
+            <span className={styles.featureIcon} aria-hidden="true">
+              {feature.icon}
+            </span>
+            <span>
+              <strong>{feature.title}</strong>
+              <span>{feature.body}</span>
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

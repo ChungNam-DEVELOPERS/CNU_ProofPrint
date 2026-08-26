@@ -18,7 +18,7 @@ insert into users (
   department,
   role
 )
-select id, 'demo:cnu:202600001', '김충남', '202600001', '컴퓨터융합학부', 'student'
+select id, 'demo:cnu:202600001', '기니돼지', '202600001', '컴퓨터융합학부', 'student'
 from tenants
 where public_id = 'cnu'
 on conflict (tenant_id, external_subject) do update

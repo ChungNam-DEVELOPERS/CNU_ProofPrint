@@ -11,6 +11,7 @@ import { Sparkle } from "@phosphor-icons/react/Sparkle";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { ProofprintHistoryItem } from "../lib/proofprint-api";
+import { proofprintBase } from "../lib/study-data";
 import styles from "../proofprint.module.css";
 
 type Filter = "전체" | "작성 중" | "제출 완료";
@@ -47,7 +48,7 @@ export function ProofprintHistory({
             과제별 작성 상태와 제출한 학습과정 기록을 확인할 수 있습니다.
           </p>
         </div>
-        <Link className={styles.primaryTopButton} href="/assignments/ai-service-proposal/proofprint">
+        <Link className={styles.primaryTopButton} href={`${proofprintBase}/workspace`}>
           <Sparkle size={17} weight="fill" aria-hidden="true" /> 작성 중인 기록 열기
         </Link>
       </div>

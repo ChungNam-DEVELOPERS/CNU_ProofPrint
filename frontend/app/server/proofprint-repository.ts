@@ -14,6 +14,7 @@ import type {
   WorkspaceStatus,
 } from "../lib/proofprint-api";
 import type { ServerActor } from "./auth";
+import { proofprintBase } from "../lib/study-data";
 import { getDb } from "./db";
 import { ConflictError, NotFoundError } from "./errors";
 
@@ -621,7 +622,7 @@ export async function listProofprints(actor: ServerActor): Promise<ProofprintHis
   return rows.map((row) => {
     const submitted = row.status === "submitted";
     const date = submitted && row.submitted_at ? row.submitted_at : row.updated_at;
-    const basePath = `/assignments/${row.slug}/proofprint`;
+    const basePath = `${proofprintBase}/workspace`;
     const supportedPath = row.slug === "ai-service-proposal";
     return {
       workspaceId: row.workspace_id,
@@ -635,7 +636,7 @@ export async function listProofprints(actor: ServerActor): Promise<ProofprintHis
         ? submitted
           ? `${basePath}/result`
           : basePath
-        : "/proofprints",
+        : `${proofprintBase}/history`,
     };
   });
 }

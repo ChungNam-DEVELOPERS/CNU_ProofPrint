@@ -10,8 +10,9 @@ const notoSansKr = Noto_Sans_KR({
 });
 
 export const metadata: Metadata = {
-  title: "CNU Proofprint | AI 학습과정 기록",
-  description: "AI 활용 과정에서 학생의 판단과 학습 변화를 기록하는 CNU 학습 도구",
+  title: "Proofprint | 사이버캠퍼스를 읽고 나에게 맞춘 학습",
+  description:
+    "사이버캠퍼스의 과목과 과제를 읽어와, 학습 에이전트가 목차별 이해도와 오답노트를 스스로 정리하는 학습 서비스",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

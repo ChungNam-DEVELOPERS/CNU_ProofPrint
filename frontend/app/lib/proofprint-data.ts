@@ -1,7 +1,7 @@
 export const course = {
   title: "[2026-2학기] 어드벤처디자인 (01반)",
   department: "컴퓨터융합학부",
-  student: "김충남",
+  student: "기니돼지",
   studentNumber: "202600001",
 };
 
