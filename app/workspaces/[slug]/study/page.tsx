@@ -4,6 +4,7 @@ import { Sparkle } from "@phosphor-icons/react/dist/ssr/Sparkle";
 import { Target } from "@phosphor-icons/react/dist/ssr/Target";
 import { User } from "@phosphor-icons/react/dist/ssr/User";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { AppShell } from "../../../components/app-shell";
 import { LevelChip } from "../../../components/level-chip";
 import { StudyComposer } from "../../../components/study-composer";
@@ -92,7 +93,9 @@ export default async function StudyPage({
             )}
           </div>
 
-          <StudyComposer workspaceSlug={slug} />
+          <Suspense fallback={null}>
+            <StudyComposer workspaceSlug={slug} />
+          </Suspense>
         </section>
 
         <aside className={styles.toolPane}>

@@ -9,38 +9,16 @@ import Anthropic, {
 import { listGaps, listMessages } from "../learning-repository";
 import { appendMessage, recordToolCall } from "../learning-writes";
 import { getDb } from "../db";
+import { resolveModelAccess } from "./access";
 import { buildTools, type ToolTrace } from "./tools";
-
-/**
- * 모델 접근 경로. 학교 게이트웨이가 Anthropic 네이티브 Messages API 를 그대로
- * 제공하므로 baseURL 만 바꿔 같은 SDK 를 쓴다. 도구 호출과 adaptive thinking 이
- * 게이트웨이에서도 동작하는 것을 확인했다.
- */
-function resolveModelAccess(): { client: Anthropic; model: string } | null {
-  const gatewayUrl = process.env.CNU_LLM_BASE_URL?.trim();
-  const gatewayToken = process.env.CNU_MULTI_LLM_CONNECTOR_TOKEN?.trim();
-
-  if (gatewayUrl && gatewayToken) {
-    return {
-      client: new Anthropic({ baseURL: gatewayUrl, apiKey: gatewayToken }),
-      model: process.env.CNU_LLM_MODEL?.trim() || "claude-sonnet-5",
-    };
-  }
-
-  if (process.env.ANTHROPIC_API_KEY?.trim() || process.env.ANTHROPIC_AUTH_TOKEN?.trim()) {
-    return {
-      client: new Anthropic(),
-      model: process.env.CNU_LLM_MODEL?.trim() || "claude-opus-5",
-    };
-  }
-
-  return null;
-}
 
 /** 설명을 듣고 이만큼 지나서 되물으면 «바로 이해하지는 못했다» 는 신호로 본다. */
 const SLOW_REPLY_SECONDS = 90;
 
 const CONFUSION = /모르겠|모르겠어|이해가 안|이해를 못|잘 안 |헷갈|다시 설명|무슨 뜻|뭐였|어렵|감이 안/;
+
+
+
 
 const SYSTEM = `너는 대학생의 학습 파트너다. 한국어로, 군더더기 없이 답한다.
 

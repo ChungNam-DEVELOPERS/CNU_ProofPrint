@@ -4,8 +4,9 @@ import { ArrowUp } from "@phosphor-icons/react/dist/ssr/ArrowUp";
 import { CircleNotch } from "@phosphor-icons/react/dist/ssr/CircleNotch";
 import { Paperclip } from "@phosphor-icons/react/dist/ssr/Paperclip";
 import { Warning } from "@phosphor-icons/react/dist/ssr/Warning";
-import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useRef, useState, type FormEvent } from "react";
+import { uploadMaterial } from "./material-upload";
 import styles from "../study.module.css";
 
 type AgentResponse = {
@@ -16,9 +17,31 @@ type AgentResponse = {
 
 export function StudyComposer({ workspaceSlug }: { workspaceSlug: string }) {
   const router = useRouter();
-  const [text, setText] = useState("");
+  // 오답노트의 «다시 물어보기» 가 질문을 실어 보낸다.
+  const prefilled = useSearchParams().get("ask") ?? "";
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [text, setText] = useState(prefilled);
   const [pending, setPending] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  async function attach(file: File | undefined) {
+    if (!file || uploading) return;
+    setUploading(true);
+    setError(null);
+    try {
+      const result = await uploadMaterial(workspaceSlug, file);
+      setText((current) =>
+        `${current}${current ? "\n" : ""}(자료 «${result.title}» 를 올렸습니다. 이 자료를 참고해 답해 줘.)`,
+      );
+      router.refresh();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "자료를 올리지 못했습니다.");
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  }
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
@@ -66,8 +89,25 @@ export function StudyComposer({ workspaceSlug }: { workspaceSlug: string }) {
       ) : null}
 
       <form className={styles.composer} onSubmit={onSubmit}>
-        <button type="button" className={styles.iconBtnLight} aria-label="자료 첨부">
-          <Paperclip size={18} weight="bold" aria-hidden="true" />
+        <input
+          ref={fileRef}
+          type="file"
+          accept=".pdf,.txt,.md,.csv,text/plain,application/pdf"
+          hidden
+          onChange={(event) => void attach(event.target.files?.[0])}
+        />
+        <button
+          type="button"
+          className={styles.iconBtnLight}
+          aria-label="자료 첨부"
+          onClick={() => fileRef.current?.click()}
+          disabled={uploading || pending}
+        >
+          {uploading ? (
+            <CircleNotch size={18} weight="bold" className={styles.spin} aria-hidden="true" />
+          ) : (
+            <Paperclip size={18} weight="bold" aria-hidden="true" />
+          )}
         </button>
         <input
           value={text}

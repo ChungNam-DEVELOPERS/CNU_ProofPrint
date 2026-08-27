@@ -6,13 +6,49 @@ import { Eye } from "@phosphor-icons/react/dist/ssr/Eye";
 import { EyeSlash } from "@phosphor-icons/react/dist/ssr/EyeSlash";
 import { Repeat } from "@phosphor-icons/react/dist/ssr/Repeat";
 import { Warning } from "@phosphor-icons/react/dist/ssr/Warning";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { CircleNotch } from "@phosphor-icons/react/dist/ssr/CircleNotch";
 import { gapSignalLabel, type Gap } from "../lib/learning";
 import styles from "../study.module.css";
 
-export function NoteDeck({ notes }: { notes: Gap[] }) {
+export function NoteDeck({
+  notes,
+  workspaceSlug,
+}: {
+  notes: Gap[];
+  workspaceSlug: string;
+}) {
+  const router = useRouter();
   const [hidden, setHidden] = useState(false);
   const [revealed, setRevealed] = useState<Set<string>>(new Set());
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  async function markMemorized(gap: Gap) {
+    if (busyId) return;
+    setBusyId(gap.id);
+    try {
+      const response = await fetch(
+        `/api/workspaces/${workspaceSlug}/gaps/${gap.id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "resolved" }),
+        },
+      );
+      if (response.ok) router.refresh();
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  function askAgain(gap: Gap) {
+    router.push(
+      `/workspaces/${workspaceSlug}/study?ask=${encodeURIComponent(
+        `«${gap.term}» 다시 설명해 줘. 내가 어디서 헷갈렸는지도 짚어 줘.`,
+      )}`,
+    );
+  }
 
   function toggleHide() {
     setHidden((value) => !value);
@@ -119,13 +155,32 @@ export function NoteDeck({ notes }: { notes: Gap[] }) {
                   {note.lastSeen}
                 </span>
                 <span style={{ display: "flex", gap: 8 }}>
-                  <button type="button" className={styles.btn}>
+                  <button
+                    type="button"
+                    className={styles.btn}
+                    onClick={() => askAgain(note)}
+                  >
                     <ArrowCounterClockwise size={14} weight="bold" aria-hidden="true" />
                     다시 물어보기
                   </button>
                   {note.status !== "resolved" ? (
-                    <button type="button" className={styles.btn}>
-                      <CheckCircle size={14} weight="bold" aria-hidden="true" /> 외웠음
+                    <button
+                      type="button"
+                      className={styles.btn}
+                      onClick={() => void markMemorized(note)}
+                      disabled={busyId === note.id}
+                    >
+                      {busyId === note.id ? (
+                        <CircleNotch
+                          size={14}
+                          weight="bold"
+                          className={styles.spin}
+                          aria-hidden="true"
+                        />
+                      ) : (
+                        <CheckCircle size={14} weight="bold" aria-hidden="true" />
+                      )}
+                      외웠음
                     </button>
                   ) : null}
                 </span>

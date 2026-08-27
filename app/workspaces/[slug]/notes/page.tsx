@@ -64,7 +64,7 @@ export default async function NotesPage({
         ))}
       </div>
 
-      <NoteDeck notes={visible} />
+      <NoteDeck notes={visible} workspaceSlug={slug} />
     </AppShell>
   );
 }

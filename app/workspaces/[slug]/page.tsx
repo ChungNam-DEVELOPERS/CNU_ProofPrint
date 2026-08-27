@@ -65,9 +65,13 @@ export default async function WorkspaceOverviewPage({
           </p>
         </div>
         <div className={styles.headActions}>
-          <button type="button" className={styles.btn}>
+          <a
+            className={styles.btn}
+            href={`/api/workspaces/${slug}/export`}
+            download
+          >
             <DownloadSimple size={16} weight="bold" aria-hidden="true" /> 기록 내보내기
-          </button>
+          </a>
           <Link
             href={`/workspaces/${slug}/study`}
             className={`${styles.btn} ${styles.btnPrimary}`}

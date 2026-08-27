@@ -1,8 +1,11 @@
 import "server-only";
 
+import { randomUUID } from "node:crypto";
 import type { Row } from "postgres";
 import type { UnderstandingLevel } from "../lib/learning";
+import type { ServerActor } from "./auth";
 import { getDb } from "./db";
+import { NotFoundError } from "./errors";
 
 /** 오답노트에 남길 만한 «막힘» 신호. 개념이 처음 나온 것만으로는 신호가 아니다. */
 export type GapSignal =
@@ -239,4 +242,106 @@ export async function touchWorkspace(
       updated_at = now()
     where id = ${workspaceId}
   `;
+}
+
+/** 제목에서 URL 에 쓸 slug 를 만든다. 한글만 있으면 알아볼 수 있는 임의 값을 쓴다. */
+function toSlug(title: string, fallbackSeed: string) {
+  const ascii = title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return ascii.length >= 2 ? ascii.slice(0, 60) : `ws-${fallbackSeed.slice(0, 6)}`;
+}
+
+export async function createWorkspace(
+  actor: ServerActor,
+  input: { title: string; subject: string; goal: string; outline: string },
+) {
+  const sql = getDb();
+
+  const [owner] = await sql<Array<Row & { id: string; tenant_id: string }>>`
+    select u.id, u.tenant_id
+    from users u
+    join tenants t on t.id = u.tenant_id
+    where t.public_id = ${actor.tenantPublicId}
+      and u.external_subject = ${actor.externalSubject}
+    limit 1
+  `;
+  if (!owner) throw new NotFoundError("사용자를 찾을 수 없습니다.");
+
+  const seed = randomUUID().replace(/-/g, "");
+  let slug = toSlug(input.title, seed);
+
+  // 같은 사용자 안에서 slug 가 겹치면 뒤에 짧은 값을 붙인다.
+  const [taken] = await sql<Array<Row & { id: string }>>`
+    select id from workspaces where owner_id = ${owner.id} and slug = ${slug} limit 1
+  `;
+  if (taken) slug = `${slug}-${seed.slice(0, 4)}`;
+
+  const [workspace] = await sql<Array<Row & { id: string; slug: string }>>`
+    insert into workspaces (
+      public_id, tenant_id, owner_id, slug, title, subject, term, emoji,
+      status, source, summary, next_action
+    ) values (
+      ${"ws_" + seed.slice(0, 12)}, ${owner.tenant_id}, ${owner.id}, ${slug},
+      ${input.title}, ${input.subject}, '2026-2학기', '📚',
+      '학습 중', 'manual',
+      ${input.goal
+        ? `아직 학습 기록이 없습니다. 목표는 «${input.goal}» 입니다.`
+        : "아직 학습 기록이 없습니다. 학습하기에서 첫 대화를 시작해 보세요."},
+      ${input.goal || "학습하기에서 첫 질문을 던져 보기"}
+    )
+    returning id, slug
+  `;
+
+  // 붙여넣은 목차가 있으면 줄 단위로 첫 트리를 만든다.
+  const titles = input.outline
+    .split("\n")
+    .map((line) => line.replace(/^[\s\-*•]+/, "").trim())
+    .filter((line) => line.length > 0)
+    .slice(0, 60);
+
+  if (titles.length > 0) {
+    await sql`
+      insert into topics ${sql(
+        titles.map((title, index) => ({
+          workspace_id: workspace.id,
+          parent_id: null,
+          position: index,
+          title,
+        })),
+        "workspace_id",
+        "parent_id",
+        "position",
+        "title",
+      )}
+    `;
+  }
+
+  return { slug: workspace.slug, topics: titles.length };
+}
+
+/** 오답노트 상태를 바꾼다. «외웠음» 은 이해도 근거로도 남는다. */
+export async function setGapStatus(
+  workspaceId: string,
+  gapId: string,
+  status: "open" | "reviewing" | "resolved",
+) {
+  const sql = getDb();
+  const [gap] = await sql<Array<Row & { id: string; term: string; topic_id: string | null }>>`
+    update gaps set status = ${status}
+    where id = ${gapId} and workspace_id = ${workspaceId}
+    returning id, term, topic_id
+  `;
+  if (!gap) throw new NotFoundError("오답노트 항목을 찾을 수 없습니다.");
+
+  if (status === "resolved" && gap.topic_id) {
+    await sql`
+      insert into topic_evidence (topic_id, kind, note)
+      values (${gap.topic_id}, 'gap_resolved', ${`«${gap.term}» 을(를) 외웠다고 표시함`})
+    `;
+    await recomputeTopicLevel(gap.topic_id);
+  }
+
+  return { term: gap.term, status };
 }

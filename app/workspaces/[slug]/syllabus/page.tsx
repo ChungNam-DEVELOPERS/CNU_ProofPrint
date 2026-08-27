@@ -1,7 +1,7 @@
-import { ArrowsClockwise } from "@phosphor-icons/react/dist/ssr/ArrowsClockwise";
 import { notFound } from "next/navigation";
 import { AppShell } from "../../../components/app-shell";
 import { LevelChip, LevelMeter } from "../../../components/level-chip";
+import { SyllabusReviewButton } from "../../../components/syllabus-review-button";
 import { levelCounts } from "../../../lib/learning";
 import { getServerActor } from "../../../server/auth";
 import {
@@ -37,9 +37,7 @@ export default async function SyllabusPage({
           </p>
         </div>
         <div className={styles.headActions}>
-          <button type="button" className={styles.btn}>
-            <ArrowsClockwise size={15} weight="bold" aria-hidden="true" /> 목차 다시 정리
-          </button>
+          <SyllabusReviewButton workspaceSlug={slug} />
         </div>
       </div>
 

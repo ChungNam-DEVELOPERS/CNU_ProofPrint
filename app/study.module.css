@@ -2186,3 +2186,60 @@
   color: var(--solid-fg);
   font-weight: 700;
 }
+
+.formError {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0 0;
+  padding: 12px 15px;
+  border-radius: 10px;
+  background: var(--danger-bg);
+  color: var(--danger-deep);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+.reviewWrap {
+  position: relative;
+}
+
+.reviewResult {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  z-index: 5;
+  width: 340px;
+  margin: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  color: var(--ink-2);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.7;
+  text-align: left;
+  white-space: pre-wrap;
+}
+
+/* ── 인쇄 (Proofprint 결과를 PDF 로 저장할 때) ────────── */
+@media print {
+  .topbar,
+  .sidenav {
+    display: none;
+  }
+
+  .body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .main {
+    padding: 0;
+  }
+
+  .shell {
+    background: #ffffff;
+  }
+}

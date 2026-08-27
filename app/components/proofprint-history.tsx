@@ -4,7 +4,6 @@ import { ArrowRight } from "@phosphor-icons/react/ArrowRight";
 import { CalendarBlank } from "@phosphor-icons/react/CalendarBlank";
 import { CheckCircle } from "@phosphor-icons/react/CheckCircle";
 import { Clock } from "@phosphor-icons/react/Clock";
-import { DownloadSimple } from "@phosphor-icons/react/DownloadSimple";
 import { FileText } from "@phosphor-icons/react/FileText";
 import { MagnifyingGlass } from "@phosphor-icons/react/MagnifyingGlass";
 import { Sparkle } from "@phosphor-icons/react/Sparkle";
@@ -122,11 +121,6 @@ export function ProofprintHistory({
                 </div>
               </div>
               <div className={styles.historyActions}>
-                {item.status === "제출 완료" && (
-                  <button type="button" aria-label={`${item.title} PDF 저장`}>
-                    <DownloadSimple size={18} weight="bold" aria-hidden="true" />
-                  </button>
-                )}
                 <Link href={item.href}>
                   {item.status === "제출 완료" ? "결과 보기" : "이어서 작성"}
                   <ArrowRight size={17} weight="bold" aria-hidden="true" />
