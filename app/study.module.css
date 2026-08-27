@@ -2161,3 +2161,28 @@
     transform: rotate(360deg);
   }
 }
+
+.uploadBoxOver {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+  color: var(--blue-strong);
+}
+
+.uploadBox {
+  cursor: pointer;
+}
+
+.uploadError {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  color: var(--danger-deep);
+  font-weight: 700;
+}
+
+.uploadDone {
+  margin-top: 4px;
+  color: var(--solid-fg);
+  font-weight: 700;
+}

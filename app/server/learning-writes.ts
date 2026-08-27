@@ -197,26 +197,6 @@ export async function applySyllabusOps(workspaceId: string, ops: SyllabusOp[]) {
   return applied;
 }
 
-export async function searchMaterials(workspaceId: string, query: string) {
-  const sql = getDb();
-  const rows = await sql<Array<Row & { id: string; title: string; extent: string }>>`
-    select id, title, extent from materials
-    where workspace_id = ${workspaceId}
-      and (title ilike ${"%" + query + "%"} or ${query} = '')
-    order by used_count desc
-    limit 5
-  `;
-
-  if (rows.length > 0) {
-    await sql`
-      update materials set used_count = used_count + 1
-      where id in ${sql(rows.map((row) => row.id))}
-    `;
-  }
-
-  return rows.map((row) => ({ title: row.title, extent: row.extent }));
-}
-
 export async function appendMessage(
   workspaceId: string,
   role: "user" | "agent",

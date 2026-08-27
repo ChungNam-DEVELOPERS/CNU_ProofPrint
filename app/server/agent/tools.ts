@@ -7,9 +7,9 @@ import {
   applySyllabusOps,
   logEvidence,
   recordToolCall,
-  searchMaterials,
   upsertGap,
 } from "../learning-writes";
+import { searchMaterialChunks } from "../materials";
 import { flattenTopics, gapSignalLabel } from "../../lib/learning";
 
 export type ToolTrace = { tool: string; summary: string };
@@ -55,17 +55,21 @@ export function buildTools(workspaceId: string, trace: ToolTrace[]) {
   const readMaterial = betaZodTool({
     name: "read_material",
     description:
-      "학생이 올린 자료에서 관련 부분을 찾는다. 자료에 근거해 답할 수 있을 때 먼저 쓴다.",
+      "학생이 올린 자료의 본문에서 관련 대목을 찾아 원문 그대로 돌려준다. " +
+      "자료에 근거해 답할 수 있을 때 먼저 쓴다. 찾은 내용을 인용할 때는 어느 자료 몇 쪽인지 밝힌다.",
     inputSchema: z.object({
       query: z.string().describe("찾을 내용. 예: 대각화 가능 조건"),
     }),
     run: async (input) => {
-      const found = await searchMaterials(workspaceId, input.query);
+      const found = await searchMaterialChunks(workspaceId, input.query);
+      const where = found.length > 0
+        ? `«${found[0].title}»${found[0].page ? ` ${found[0].page}쪽` : ""} 등 ${found.length}곳`
+        : null;
       await note(
         "read_material",
-        found.length > 0
-          ? `«${found[0].title}» 을(를) 참고했습니다.`
-          : `«${input.query}» 관련 자료를 찾지 못했습니다.`,
+        where
+          ? `${where}을(를) 참고했습니다.`
+          : `«${input.query}» 관련 대목을 자료에서 찾지 못했습니다.`,
         input,
         found,
       );

@@ -1,10 +1,10 @@
-import { FileArrowUp } from "@phosphor-icons/react/dist/ssr/FileArrowUp";
 import { FilePdf } from "@phosphor-icons/react/dist/ssr/FilePdf";
 import { LinkSimple } from "@phosphor-icons/react/dist/ssr/LinkSimple";
 import { NotePencil } from "@phosphor-icons/react/dist/ssr/NotePencil";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { AppShell } from "../../../components/app-shell";
+import { MaterialUpload } from "../../../components/material-upload";
 import type { Material } from "../../../lib/learning";
 import { getServerActor } from "../../../server/auth";
 import {
@@ -45,9 +45,7 @@ export default async function MaterialsPage({
           </p>
         </div>
         <div className={styles.headActions}>
-          <button type="button" className={`${styles.btn} ${styles.btnPrimary}`}>
-            <FileArrowUp size={16} weight="bold" aria-hidden="true" /> 자료 올리기
-          </button>
+          <MaterialUpload workspaceSlug={slug} />
         </div>
       </div>
 
@@ -74,11 +72,11 @@ export default async function MaterialsPage({
           </div>
         ))}
 
-        <div className={styles.uploadBox}>
-          <FileArrowUp size={26} weight="bold" aria-hidden="true" />
-          <strong>여기에 파일을 끌어다 놓으세요</strong>
-          <span>PDF, 이미지, 텍스트를 지원합니다</span>
-        </div>
+        {materials.length === 0 ? (
+          <p className={styles.muted}>
+            아직 올린 자료가 없습니다. 위 버튼으로 PDF 를 올리면 에이전트가 본문을 읽습니다.
+          </p>
+        ) : null}
       </section>
     </AppShell>
   );
