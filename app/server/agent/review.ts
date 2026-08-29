@@ -2,7 +2,8 @@ import "server-only";
 
 import { getTopicTree } from "../learning-repository";
 import { flattenTopics } from "../../lib/learning";
-import { buildTools, type ToolTrace } from "./tools";
+import { buildStudyTools, type ToolTrace } from "./tools";
+import { getOrCreateAgentContext } from "./sessions";
 import { resolveModelAccess } from "./access";
 
 const SYSTEM = `너는 학생의 목차를 정리하는 조수다. 한국어로 답한다.
@@ -36,13 +37,16 @@ export async function reviewSyllabus(
 
   const before = flattenTopics(await getTopicTree(workspaceId)).map((t) => t.title);
   const trace: ToolTrace[] = [];
+  const agentContext = await getOrCreateAgentContext(workspaceId, {
+    agentType: "study",
+  });
 
   const runner = access.client.beta.messages.toolRunner({
     model: access.model,
     max_tokens: 4000,
     thinking: { type: "adaptive" },
     system: SYSTEM,
-    tools: buildTools(workspaceId, trace),
+    tools: buildStudyTools(agentContext, trace),
     messages: [
       {
         role: "user",

@@ -15,7 +15,13 @@ type AgentResponse = {
   trace: { tool: string; summary: string }[];
 };
 
-export function StudyComposer({ workspaceSlug }: { workspaceSlug: string }) {
+export function StudyComposer({
+  workspaceSlug,
+  assignmentId,
+}: {
+  workspaceSlug: string;
+  assignmentId?: string;
+}) {
   const router = useRouter();
   // 오답노트의 «다시 물어보기» 가 질문을 실어 보낸다.
   const prefilled = useSearchParams().get("ask") ?? "";
@@ -52,7 +58,10 @@ export function StudyComposer({ workspaceSlug }: { workspaceSlug: string }) {
     setError(null);
 
     try {
-      const response = await fetch(`/api/workspaces/${workspaceSlug}/agent`, {
+      const endpoint = assignmentId
+        ? `/api/workspaces/${workspaceSlug}/assignments/${assignmentId}/agent`
+        : `/api/workspaces/${workspaceSlug}/agent`;
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message }),
@@ -115,8 +124,10 @@ export function StudyComposer({ workspaceSlug }: { workspaceSlug: string }) {
           disabled={pending}
           placeholder={
             pending
-              ? "에이전트가 목차와 오답노트를 확인하는 중입니다…"
-              : "궁금한 것을 물어보거나, 배운 것을 직접 설명해 보세요"
+              ? "에이전트가 기록과 자료를 확인하는 중입니다…"
+              : assignmentId
+                ? "과제에 관해 묻거나, 내 판단을 직접 말해 보세요"
+                : "궁금한 것을 물어보거나, 배운 것을 직접 설명해 보세요"
           }
         />
         <button

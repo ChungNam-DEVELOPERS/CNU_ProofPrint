@@ -6,11 +6,17 @@ import Anthropic, {
   AuthenticationError,
   RateLimitError,
 } from "@anthropic-ai/sdk";
-import { listGaps, listMessages } from "../learning-repository";
-import { appendMessage, recordToolCall } from "../learning-writes";
+import { listGaps } from "../learning-repository";
 import { getDb } from "../db";
 import { resolveModelAccess } from "./access";
-import { buildTools, type ToolTrace } from "./tools";
+import { buildAssignmentTools } from "./assignment-tools";
+import {
+  appendSessionMessage,
+  listSessionMessages,
+  recordSessionToolCall,
+  type AgentContext,
+} from "./sessions";
+import { buildStudyTools, type ToolTrace } from "./tools";
 
 /** 설명을 듣고 이만큼 지나서 되물으면 «바로 이해하지는 못했다» 는 신호로 본다. */
 const SLOW_REPLY_SECONDS = 90;
@@ -41,17 +47,28 @@ const SYSTEM = `너는 대학생의 학습 파트너다. 한국어로, 군더더
 설명만 해 주고 끝내지 않는다. 설명한 뒤에는 학생이 자기 말로 다시 설명해 보게 한다.
 학생이 틀렸을 때는 정답만 던지지 말고, 어디서 어긋났는지 짚어 준다.`;
 
+const ASSIGNMENT_SYSTEM = `너는 대학생이 과제를 수행하는 과정을 돕고 증명 가능한 기록을 남기는 과제 파트너다. 한국어로 간결하게 답한다.
+
+현재 과제의 범위 안에서만 대화한다. 과목 전반을 공부하려는 요청은 학습 Agent가 더 적합하다고 알려준다.
+필요할 때만 도구를 쓴다. get_assignment_state로 과제 맥락을 확인하고, 자료 근거가 필요하면 read_material을 쓴다.
+이전에 학습한 내용이 과제와 연결되면 find_learning_evidence로 원본 출처를 찾는다.
+AI가 실제로 기여한 핵심 내용은 record_ai_contribution으로 남긴다.
+
+학생의 판단은 절대 대신 확정하지 않는다. 학생이 채택·수정·폐기와 그 이유를 자기 말로 밝혔을 때만 propose_student_decision으로 후보를 만든다. source에는 근거가 된 학생 발언을 짧게 그대로 넣는다. 후보는 학생이 화면에서 승인해야 Proofprint에 반영된다.
+
+답을 완성해서 제출해 주기보다 대안을 비교하고, 학생이 자기 판단을 말하도록 질문한다.`;
+
 /**
  * 이번 턴에 «막힘» 신호가 있었는지 실제로 재서 알려준다.
  * 모델이 짐작하지 않게, 잰 값만 넘긴다.
  */
-async function measureStudySignals(workspaceId: string, userText: string) {
+async function measureStudySignals(context: AgentContext, userText: string) {
   const sql = getDb();
   const [last] = await sql<
     Array<{ role: "user" | "agent"; created_at: Date }>
   >`
     select role, created_at from messages
-    where workspace_id = ${workspaceId}
+    where session_id = ${context.sessionId}
     order by created_at desc limit 1
   `;
 
@@ -71,7 +88,7 @@ async function measureStudySignals(workspaceId: string, userText: string) {
     notes.push("학생이 모르겠다는 표현을 직접 썼다 (explicit_confusion 신호).");
   }
 
-  const gaps = await listGaps(workspaceId);
+  const gaps = await listGaps(context.workspaceId);
   const repeated = gaps.find(
     (gap) => gap.status !== "resolved" && userText.includes(gap.term),
   );
@@ -128,21 +145,23 @@ function explainFailure(error: unknown): AgentRunResult | null {
 }
 
 /** 이번 턴에 쌓인 도구 호출을 방금 만든 답변 메시지에 붙인다. */
-async function attachToolCalls(workspaceId: string, messageId: string) {
+async function attachToolCalls(context: AgentContext, messageId: string) {
   const sql = getDb();
   await sql`
     update tool_calls set message_id = ${messageId}
-    where workspace_id = ${workspaceId} and message_id is null
+    where session_id = ${context.sessionId} and message_id is null
   `;
 }
 
 export async function runAgentTurn(
-  workspaceId: string,
+  context: AgentContext,
   userText: string,
 ): Promise<AgentRunResult> {
   // 사용자 메시지를 넣기 전에 재야 «직전 답변 이후 얼마나 걸렸는지» 가 나온다.
-  const signalLine = await measureStudySignals(workspaceId, userText);
-  await appendMessage(workspaceId, "user", userText);
+  const signalLine = context.agentType === "study"
+    ? await measureStudySignals(context, userText)
+    : null;
+  await appendSessionMessage(context, "user", userText);
 
   const access = resolveModelAccess();
   if (!access) {
@@ -150,27 +169,27 @@ export async function runAgentTurn(
       "지금은 학교 AI 연결이 설정되지 않아 답변을 만들 수 없습니다. " +
       "CNU_LLM_BASE_URL 과 CNU_MULTI_LLM_CONNECTOR_TOKEN 을 설정하면 " +
       "에이전트가 목차와 오답노트를 직접 갱신합니다.";
-    await appendMessage(workspaceId, "agent", reply);
+    await appendSessionMessage(context, "agent", reply);
     return { mode: "no_credentials", reply, trace: [] };
   }
 
-  const history = await listMessages(workspaceId);
+  const history = await listSessionMessages(context.sessionId);
   const messages: Anthropic.MessageParam[] = history.map((message) => ({
     role: message.role === "agent" ? "assistant" : "user",
     content: message.paragraphs.join("\n\n"),
   }));
 
   // 잰 신호는 대화 본문이 아니라 운영자 채널로 넣는다.
-  messages.push({ role: "system", content: signalLine });
+  if (signalLine) messages.push({ role: "system", content: signalLine });
 
   const trace: ToolTrace[] = [];
 
   try {
-    return await runToolLoop(access.client, access.model, workspaceId, messages, trace);
+    return await runToolLoop(access.client, access.model, context, messages, trace);
   } catch (error) {
     const explained = explainFailure(error);
     if (!explained) throw error;
-    await appendMessage(workspaceId, "agent", explained.reply);
+    await appendSessionMessage(context, "agent", explained.reply);
     return explained;
   }
 }
@@ -178,7 +197,7 @@ export async function runAgentTurn(
 async function runToolLoop(
   client: Anthropic,
   model: string,
-  workspaceId: string,
+  context: AgentContext,
   messages: Anthropic.MessageParam[],
   trace: ToolTrace[],
 ): Promise<AgentRunResult> {
@@ -186,9 +205,11 @@ async function runToolLoop(
     model,
     max_tokens: 16000,
     thinking: { type: "adaptive" },
-    system: SYSTEM,
+    system: context.agentType === "study" ? SYSTEM : ASSIGNMENT_SYSTEM,
     tools: [
-      ...buildTools(workspaceId, trace),
+      ...(context.agentType === "study"
+        ? buildStudyTools(context, trace)
+        : buildAssignmentTools(context, trace)),
       { type: "web_search_20260209", name: "web_search", max_uses: 3 },
     ],
     messages,
@@ -205,8 +226,8 @@ async function runToolLoop(
       if (block.type === "server_tool_use" && block.name === "web_search") {
         const query = (block.input as { query?: string })?.query ?? "";
         trace.push({ tool: "web_search", summary: `«${query}» 을(를) 검색했습니다.` });
-        await recordToolCall(
-          workspaceId,
+        await recordSessionToolCall(
+          context,
           null,
           "web_search",
           `«${query}» 을(를) 검색했습니다.`,
@@ -224,12 +245,12 @@ async function runToolLoop(
     .filter(Boolean)
     .join("\n\n");
 
-  const messageId = await appendMessage(
-    workspaceId,
+  const messageId = await appendSessionMessage(
+    context,
     "agent",
     reply || "답변을 만들지 못했습니다.",
   );
-  await attachToolCalls(workspaceId, messageId);
+  await attachToolCalls(context, messageId);
 
   return { mode: "live", reply, trace };
 }

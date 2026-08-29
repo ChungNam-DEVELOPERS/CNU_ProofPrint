@@ -13,6 +13,7 @@ import type {
   WorkspaceResource,
   WorkspaceStatus,
 } from "../lib/proofprint-api";
+import { aiPurposes } from "../lib/proofprint-api";
 import type { ServerActor } from "./auth";
 import { proofprintBase } from "../lib/study-data";
 import { getDb } from "./db";
@@ -88,6 +89,12 @@ type HistoryRow = Row & {
   submitted_at: Date | null;
   checkpoint_count: number;
   share_raw: boolean;
+};
+
+type AgentSourceRow = Row & {
+  section: "goal" | "ai_use" | "judgment" | "reflection" | "learning";
+  artifact_type: string;
+  payload: Record<string, unknown>;
 };
 
 const emptyDisclosure: DisclosureSettings = {
@@ -232,24 +239,54 @@ async function findWorkspace(
   if (!row) throw new NotFoundError();
   assertWorkspaceFields(row);
 
-  const checkpointRows = await sql<CheckpointRow[]>`
-    select
-      ai.id,
-      ai.occurred_at,
-      ai.purpose,
-      ai.question_summary,
-      ai.suggestion_summary,
-      ai.provider,
-      ai.model_id,
-      ai.source_request_id,
-      decision.decision,
-      decision.reason,
-      ai.is_primary
-    from ai_uses ai
-    left join decision_checkpoints decision on decision.ai_use_id = ai.id
-    where ai.proofprint_id = ${row.internal_workspace_id}
-    order by ai.occurred_at asc, ai.id asc
-  `;
+  const [checkpointRows, agentSourceRows] = await Promise.all([
+    sql<CheckpointRow[]>`
+      select
+        ai.id,
+        ai.occurred_at,
+        ai.purpose,
+        ai.question_summary,
+        ai.suggestion_summary,
+        ai.provider,
+        ai.model_id,
+        ai.source_request_id,
+        decision.decision,
+        decision.reason,
+        ai.is_primary
+      from ai_uses ai
+      left join decision_checkpoints decision on decision.ai_use_id = ai.id
+      where ai.proofprint_id = ${row.internal_workspace_id}
+      order by ai.occurred_at asc, ai.id asc
+    `,
+    sql<AgentSourceRow[]>`
+      select ps.section, a.artifact_type,
+             coalesce(ap.edited_payload, a.payload) as payload
+      from proofprint_sources ps
+      join agent_artifacts a on a.id = ps.artifact_id
+      left join artifact_approvals ap on ap.artifact_id = a.id
+      where ps.proofprint_id = ${row.internal_workspace_id}
+        and (a.artifact_type <> 'decision_candidate' or ap.status = 'approved')
+      order by ps.position, a.created_at, a.id
+    `,
+  ]);
+
+  const contribution = agentSourceRows.findLast(
+    (source) => source.artifact_type === "ai_contribution",
+  )?.payload;
+  const judgment = agentSourceRows.findLast(
+    (source) => source.artifact_type === "decision_candidate",
+  )?.payload;
+  const reflections = agentSourceRows.filter(
+    (source) => source.section === "learning" || source.section === "reflection",
+  );
+  const learningLines = reflections.flatMap((source) => {
+    const payload = source.payload;
+    const value =
+      payload.summary ?? payload.note ?? payload.definition ?? payload.term ?? null;
+    return typeof value === "string" && value.trim() ? [value.trim()] : [];
+  });
+  const purpose = contribution?.purpose;
+  const decision = judgment?.decision;
 
   return {
     workspaceId: row.workspace_id,
@@ -305,6 +342,26 @@ async function findWorkspace(
     checkpoints: checkpointRows.map((checkpoint) =>
       mapCheckpoint(checkpoint, row.workspace_id),
     ),
+    agentDraft: {
+      sourceCount: agentSourceRows.length,
+      purpose: typeof purpose === "string" && aiPurposes.includes(purpose as AiPurpose)
+        ? purpose as AiPurpose
+        : null,
+      aiQuestion: typeof contribution?.questionSummary === "string"
+        ? contribution.questionSummary
+        : null,
+      aiSummary: typeof contribution?.contributionSummary === "string"
+        ? contribution.contributionSummary
+        : null,
+      decision:
+        decision === "adopt" || decision === "revise" || decision === "reject"
+          ? decision
+          : null,
+      reason: typeof judgment?.reason === "string" ? judgment.reason : null,
+      learned: learningLines.length > 0 ? learningLines.slice(0, 4).join(" ") : null,
+      changed: null,
+      remainingQuestion: null,
+    },
     latestSubmission: mapSubmission(row),
   };
 }
@@ -312,6 +369,26 @@ async function findWorkspace(
 export function getWorkspaceByAssignmentSlug(actor: ServerActor, slug: string) {
   const sql = getDb();
   return findWorkspace(actor, sql`a.slug = ${slug}`);
+}
+
+/** 과목 워크스페이스 안의 과제가 실제로 가리키는 Proofprint를 읽는다. */
+export function getWorkspaceByLearningAssignment(
+  actor: ServerActor,
+  learningWorkspaceId: string,
+  assignmentSlug: string,
+) {
+  const sql = getDb();
+  return findWorkspace(
+    actor,
+    sql`w.id = (
+      select wa.proofprint_id
+      from workspace_assignments wa
+      where wa.workspace_id = ${learningWorkspaceId}
+        and wa.slug = ${assignmentSlug}
+        and wa.proofprint_id is not null
+      limit 1
+    )`,
+  );
 }
 
 export function getWorkspaceByPublicId(actor: ServerActor, workspaceId: string) {

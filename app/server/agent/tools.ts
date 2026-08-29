@@ -6,11 +6,15 @@ import { getTopicTree, listGaps, listMaterials } from "../learning-repository";
 import {
   applySyllabusOps,
   logEvidence,
-  recordToolCall,
   upsertGap,
 } from "../learning-writes";
 import { searchMaterialChunks } from "../materials";
 import { flattenTopics, gapSignalLabel } from "../../lib/learning";
+import {
+  createArtifact,
+  recordSessionToolCall,
+  type AgentContext,
+} from "./sessions";
 
 export type ToolTrace = { tool: string; summary: string };
 
@@ -18,10 +22,11 @@ export type ToolTrace = { tool: string; summary: string };
  * 에이전트가 쓸 수 있는 도구. 워크스페이스 밖으로는 나가지 못하도록
  * workspaceId 를 클로저로 묶어 넘긴다.
  */
-export function buildTools(workspaceId: string, trace: ToolTrace[]) {
+export function buildStudyTools(context: AgentContext, trace: ToolTrace[]) {
+  const workspaceId = context.workspaceId;
   async function note(tool: string, summary: string, args: unknown, result: unknown) {
     trace.push({ tool, summary });
-    await recordToolCall(workspaceId, null, tool, summary, args, result);
+    await recordSessionToolCall(context, null, tool, summary, args, result);
   }
 
   const getState = betaZodTool({
@@ -100,6 +105,9 @@ export function buildTools(workspaceId: string, trace: ToolTrace[]) {
         input.kind,
         input.note,
       );
+      if (result.ok) {
+        await createArtifact(context, "learning_evidence", input, input.topicTitle);
+      }
       await note(
         "log_evidence",
         result.ok
@@ -158,6 +166,7 @@ export function buildTools(workspaceId: string, trace: ToolTrace[]) {
         topicTitle: input.topicTitle ?? null,
         signal: input.signal,
       });
+      await createArtifact(context, "learning_gap", input, input.term.toLowerCase());
       const why = gapSignalLabel[input.signal];
       await note(
         "record_gap",
@@ -204,6 +213,7 @@ export function buildTools(workspaceId: string, trace: ToolTrace[]) {
         ),
       );
       if (applied.length > 0) {
+        await createArtifact(context, "syllabus_topic", input);
         await note("update_syllabus", `목차를 고쳤습니다 — ${applied.join(", ")}`, input, applied);
       }
       return JSON.stringify(applied);

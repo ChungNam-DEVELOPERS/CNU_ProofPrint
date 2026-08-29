@@ -119,6 +119,7 @@ export function ProofprintWorkspace({
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [saveError, setSaveError] = useState("");
   const [privacyOpen, setPrivacyOpen] = useState(false);
+  const agentDraft = initialWorkspace.agentDraft;
 
   const draft: WorkspaceDraft = {
     personalGoal,
@@ -165,6 +166,20 @@ export function ProofprintWorkspace({
   const chooseDecision = (nextDecision: Decision) => {
     setDecision(nextDecision);
     setReason(reasonByDecision[nextDecision]);
+    setSaveState("idle");
+  };
+
+  const applyAgentDraft = () => {
+    if (agentDraft.purpose) setPurpose(agentDraft.purpose);
+    if (agentDraft.aiQuestion) setAiQuestion(agentDraft.aiQuestion);
+    if (agentDraft.aiSummary) setAiSummary(agentDraft.aiSummary);
+    if (agentDraft.decision) setDecision(agentDraft.decision);
+    if (agentDraft.reason) setReason(agentDraft.reason);
+    if (agentDraft.learned) setLearned(agentDraft.learned);
+    if (agentDraft.changed) setChanged(agentDraft.changed);
+    if (agentDraft.remainingQuestion) {
+      setRemainingQuestion(agentDraft.remainingQuestion);
+    }
     setSaveState("idle");
   };
 
@@ -220,6 +235,15 @@ export function ProofprintWorkspace({
       <div className={styles.workspaceHeader}>
         <h1>{assignment.title}</h1>
         <span className={styles.draftBadge}>임시저장됨 · {formatSavedAt(updatedAt)}</span>
+        {agentDraft.sourceCount > 0 ? (
+          <button
+            type="button"
+            className={styles.secondaryAction}
+            onClick={applyAgentDraft}
+          >
+            Agent 기록 {agentDraft.sourceCount}개로 초안 채우기
+          </button>
+        ) : null}
       </div>
 
       <ol className={styles.stepper} aria-label="Proofprint 작성 단계">

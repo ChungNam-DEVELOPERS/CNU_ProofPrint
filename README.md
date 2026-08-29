@@ -75,9 +75,17 @@ DB만 제어할 때는 `npm run db:start`, `db:status`, `db:stop`. 마이그레�
 - 워크스페이스·목차·이해도·오답노트·과제 목록은 아직 `app/lib/study-data.ts`의 목 데이터다.
 - Proofprint 5단계 작업공간·제출·이력만 PostgreSQL에 저장된다.
 
-## 학습 에이전트
+## 에이전트 구조
 
-`POST /api/workspaces/[slug]/agent` 하나가 한 턴을 돌린다. 도구는 다섯 개다.
+대화는 역할과 기록 범위가 다른 두 세션으로 분리한다.
+
+- 학습 Agent: `/workspaces/[slug]/study`. 과목 전반의 개념 이해와 학습 근거를 남긴다.
+- 과제 Agent: `/workspaces/[slug]/assignments/[id]/agent`. 모든 산출물에 과제 ID를 붙이고
+  학습 Agent의 기존 근거를 출처와 함께 찾아 쓴다.
+- 정리 Agent: 두 Agent의 원본 산출물을 삭제하지 않고 같은 개념을 묶고, 목차와 연결하고,
+  학습 현황과 통합 Proofprint 재료를 갱신한다.
+
+학습 Agent의 도구는 다섯 개다.
 
 | 도구 | 하는 일 |
 | --- | --- |
@@ -86,6 +94,20 @@ DB만 제어할 때는 `npm run db:start`, `db:status`, `db:stop`. 마이그레�
 | `log_evidence` | 학습 근거를 기록한다. 이해도 값은 쓰지 못한다 |
 | `record_gap` | 몰랐던 개념을 오답노트에 키워드로 남긴다 |
 | `update_syllabus` | 목차에 없는 주제를 추가한다 |
+
+과제 Agent의 도구도 다섯 개다.
+
+| 도구 | 하는 일 |
+| --- | --- |
+| `get_assignment_state` | 과제와 현재 학습 상태를 읽는다 |
+| `read_material` | 올린 자료에서 관련 부분을 찾는다 |
+| `find_learning_evidence` | 학습 Agent가 남긴 근거를 출처와 함께 찾는다 |
+| `record_ai_contribution` | 과제에 실제로 사용한 AI 기여를 기록한다 |
+| `propose_student_decision` | 학생 발언에서 판단 후보를 만들고 승인을 기다린다 |
+
+AI가 만든 학생 판단은 곧바로 Proofprint에 들어가지 않는다. 학생이 과제 Agent 화면에서
+`확정`한 후보만 `proofprint_sources`에 연결된다. 제외한 후보와 원본 대화는 감사 가능한
+기록으로 남지만 최종 결과의 근거로 사용되지 않는다.
 
 **에이전트는 이해도를 직접 쓰지 못한다.** `log_evidence`로 무슨 일이 있었는지만 기록하고,
 상태는 `app/server/learning-writes.ts`의 `levelFromEvidence`가 계산한다. 에이전트가 설명해 준

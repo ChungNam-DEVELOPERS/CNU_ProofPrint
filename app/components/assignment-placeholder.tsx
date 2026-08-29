@@ -26,7 +26,7 @@ export function AssignmentPlaceholder({
         </div>
         <div className={styles.headActions}>
           <Link
-            href={`/workspaces/${workspaceSlug}/study`}
+            href={`/workspaces/${workspaceSlug}/assignments/${item.id}/agent`}
             className={`${styles.btn} ${styles.btnPrimary}`}
           >
             <ChatCircleDots size={16} weight="bold" aria-hidden="true" /> 에이전트와 시작하기
@@ -40,7 +40,7 @@ export function AssignmentPlaceholder({
         <span>
           {item.source} · {item.due ? `마감 ${item.due}` : "마감 없음"}
           <br />
-          지금은 학습하기 화면에서 이 주제로 바로 대화할 수 있습니다.
+          과제 Agent와 대화한 기록은 이 과제의 Proofprint 재료로 연결됩니다.
         </span>
       </div>
     </>

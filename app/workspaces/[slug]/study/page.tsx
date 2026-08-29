@@ -14,9 +14,12 @@ import {
   getTopicTree,
   getWorkspaceBySlug,
   listGaps,
-  listMessages,
   requireWorkspaceId,
 } from "../../../server/learning-repository";
+import {
+  getOrCreateAgentContext,
+  listSessionMessages,
+} from "../../../server/agent/sessions";
 import styles from "../../../study.module.css";
 
 export const dynamic = "force-dynamic";
@@ -32,10 +35,11 @@ export default async function StudyPage({
   if (!(await getWorkspaceBySlug(actor, slug))) notFound();
 
   const workspaceId = await requireWorkspaceId(actor, slug);
+  const agentContext = await getOrCreateAgentContext(workspaceId, { agentType: "study" });
   const [topics, gaps, messages] = await Promise.all([
     getTopicTree(workspaceId),
     listGaps(workspaceId),
-    listMessages(workspaceId),
+    listSessionMessages(agentContext.sessionId),
   ]);
 
   const focus = flattenTopics(topics).filter((topic) => topic.level === "shaky");

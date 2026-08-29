@@ -100,6 +100,17 @@ export type WorkspaceResource = {
   draft: WorkspaceDraft;
   disclosure: DisclosureSettings;
   checkpoints: CheckpointResource[];
+  agentDraft: {
+    sourceCount: number;
+    purpose: AiPurpose | null;
+    aiQuestion: string | null;
+    aiSummary: string | null;
+    decision: Decision | null;
+    reason: string | null;
+    learned: string | null;
+    changed: string | null;
+    remainingQuestion: string | null;
+  };
   latestSubmission: ProofprintSubmission | null;
 };
 
